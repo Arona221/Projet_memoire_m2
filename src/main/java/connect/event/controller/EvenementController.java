@@ -29,16 +29,11 @@ public class EvenementController {
     }
 
     @PostMapping
-    public ResponseEntity<Evenement> createEvenement(@RequestBody EvenementDTO evenementDTO) {
-        // Vérifiez si le status est null et initialisez-le avec EN_ATTENTE
-        if (evenementDTO.getStatus() == null) {
-            evenementDTO.setStatus(Status.EN_ATTENTE);
-        }
+    public ResponseEntity<Evenement> createEvenement(@RequestBody EvenementDTO evenementDTO, @RequestParam Long idUtilisateur) {
+        // Créez l'événement avec l'utilisateur en tant qu'organisateur
+        Evenement newEvenement = evenementService.createEvenement(evenementDTO, idUtilisateur);
 
-        // Créez l'événement avec le service
-        Evenement newEvenement = evenementService.createEvenement(evenementDTO);
-
-        // Retournez la réponse avec l'événement créé
+        // Retourner la réponse avec l'événement créé
         return ResponseEntity.ok(newEvenement);
     }
 

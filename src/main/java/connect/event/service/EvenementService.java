@@ -4,8 +4,11 @@ import connect.event.dto.EvenementDTO;
 import connect.event.dto.BilletDTO;
 import connect.event.entity.Billet;
 import connect.event.entity.Evenement;
+import connect.event.entity.Utilisateur;
 import connect.event.enums.Status;
+import connect.event.enums.TypeUtilisateur;
 import connect.event.repository.EvenementRepository;
+import connect.event.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -18,6 +21,8 @@ public class EvenementService {
 
     @Autowired
     private EvenementRepository evenementRepository;
+    @Autowired
+    private UtilisateurRepository utilisateurRepository;
 
     /**
      * Récupère tous les événements et les retourne sous forme de DTOs.
@@ -50,7 +55,18 @@ public class EvenementService {
      * @param evenementDTO Les données de l'événement sous forme de DTO.
      * @return Le DTO de l'événement enregistré ou mis à jour.
      */
-    public Evenement createEvenement(EvenementDTO evenementDTO) {
+
+
+    public Evenement createEvenement(EvenementDTO evenementDTO, Long idUtilisateur) {
+        // Récupérer l'utilisateur par son ID
+        Utilisateur utilisateur = utilisateurRepository.findById(idUtilisateur)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
+
+        // Vérifier si l'utilisateur est bien un organisateur
+        if (utilisateur.getTypeUtilisateur() != TypeUtilisateur.ORGANISATEUR) {
+            throw new IllegalArgumentException("L'utilisateur doit être un organisateur.");
+        }
+
         Evenement evenement = new Evenement();
         evenement.setNom(evenementDTO.getNom());
         evenement.setDate(evenementDTO.getDate());
@@ -58,8 +74,13 @@ public class EvenementService {
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());
         evenement.setStatus(evenementDTO.getStatus());
-        evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
         evenement.setImage(evenementDTO.getImage());
+        evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
+
+        // Définir le statut par défaut à EN_ATTENTE
+        evenement.setStatus(Status.EN_ATTENTE);
+        // Associer l'organisateur à l'événement
+        evenement.setOrganisateur(utilisateur);
 
         // Conversion des billets DTO en entités
         List<Billet> billets = evenementDTO.getBillets().stream().map(billetDTO -> {

@@ -44,8 +44,7 @@ public class Evenement {
 
     @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Billet> billets = new ArrayList<>();
-
-    //@ManyToOne
-    //@JoinColumn(name = "idOrganisateur", nullable = false)
-    //private Organisateur organisateur;
+    @ManyToOne
+    @JoinColumn(name = "idOrganisateur", nullable = false)
+    private Utilisateur organisateur; // Lien avec l'organisateur
 }
