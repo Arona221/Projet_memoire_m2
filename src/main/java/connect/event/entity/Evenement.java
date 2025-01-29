@@ -46,5 +46,5 @@ public class Evenement {
     private List<Billet> billets = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "idOrganisateur", nullable = false)
-    private Utilisateur organisateur; // Lien avec l'organisateur
+    private Utilisateur organisateur;
 }

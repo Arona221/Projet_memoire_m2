@@ -1,26 +1,25 @@
 package connect.event.dto;
-
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import connect.event.entity.Reservation;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Data
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ReservationDTO {
+    private Long id;
+    private Long idOrganisateur;
+    private Long idRessource;
+    private LocalDate date;
+    private LocalTime heure;
 
-    @NotNull(message = "L'identifiant du lieu est obligatoire")
-    private Long idLieu;
-
-    @NotNull(message = "L'identifiant de l'utilisateur est obligatoire")
-    private Long idUtilisateur;
-
-    @NotNull(message = "La date de réservation est obligatoire")
-    private LocalDate dateReservation;
-
-    @NotNull(message = "L'heure de début est obligatoire")
-    private LocalTime heureDebut;
-
-    @NotNull(message = "L'heure de fin est obligatoire")
-    private LocalTime heureFin;
+    public static ReservationDTO fromEntity(Reservation reservation) {
+        return new ReservationDTO(
+                reservation.getId(),
+                reservation.getOrganisateur().getIdUtilisateur(),
+                reservation.getRessource().getId(),
+                reservation.getDate(),
+                reservation.getHeure()
+        );
+    }
 }
