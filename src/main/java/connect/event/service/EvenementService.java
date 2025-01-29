@@ -5,6 +5,7 @@ import connect.event.dto.BilletDTO;
 import connect.event.entity.Billet;
 import connect.event.entity.Evenement;
 import connect.event.entity.Utilisateur;
+import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import connect.event.enums.TypeUtilisateur;
 import connect.event.repository.EvenementRepository;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +58,7 @@ public class EvenementService {
      * @param evenementDTO Les données de l'événement sous forme de DTO.
      * @return Le DTO de l'événement enregistré ou mis à jour.
      */
+
 
 
     public Evenement createEvenement(EvenementDTO evenementDTO, Long idUtilisateur) {
@@ -167,4 +171,93 @@ public class EvenementService {
         evenement.setStatus(dto.getStatus());
         return evenement;
     }
+    public boolean updateStatus(Long idEvenement, Status status) {
+        Evenement evenement = evenementRepository.findById(idEvenement)
+                .orElseThrow(() -> new IllegalArgumentException("Événement introuvable"));
+
+        // On peut ajouter une vérification pour voir si l'événement est déjà approuvé ou rejeté
+        if (evenement.getStatus() == Status.APPROUVE || evenement.getStatus() == Status.ANNULE) {
+            throw new IllegalStateException("L'événement a déjà un statut final.");
+        }
+
+        evenement.setStatus(status);
+        evenementRepository.save(evenement);
+        return true;
+    }
+    /**
+     * Recherche des événements en fonction des filtres.
+     *
+     * @param categorie La catégorie d'événements (optionnel).
+     * @param date      La date de l'événement (optionnel).
+     * @param lieu      Le lieu de l'événement (optionnel).
+     * @return Liste des événements filtrés.
+     */
+    public List<EvenementDTO> searchEvenements(Categorie categorie, Date date, String lieu) {
+        // Si tous les paramètres sont null, on renvoie tous les événements
+        if (categorie == null && date == null && lieu == null) {
+            return evenementRepository.findAll()
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // Si la catégorie est non nulle, on la filtre
+        if (categorie != null && date != null && lieu != null) {
+            // Tous les paramètres sont fournis
+            return evenementRepository.findByCategorieAndDateAndLieu(categorie, date, lieu)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // Recherche avec un seul ou deux filtres
+        if (categorie != null && date != null) {
+            return evenementRepository.findByCategorieAndDate(categorie, date)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        if (categorie != null && lieu != null) {
+            return evenementRepository.findByCategorieAndLieu(categorie, lieu)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        if (date != null && lieu != null) {
+            return evenementRepository.findByDateAndLieu(date, lieu)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // Recherche avec un seul filtre
+        if (categorie != null) {
+            return evenementRepository.findByCategorie(categorie)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        if (date != null) {
+            return evenementRepository.findByDate(date)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        if (lieu != null) {
+            return evenementRepository.findByLieu(lieu)
+                    .stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        // Par défaut, si aucun paramètre n'est donné
+        return Collections.emptyList(); // Aucun événement trouvé
+    }
+
+
+
 }
