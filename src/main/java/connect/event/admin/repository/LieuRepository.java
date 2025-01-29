@@ -1,6 +1,6 @@
-package connect.event.repository;
+package connect.event.admin.repository;
 
-import connect.event.entity.Lieu;
+import connect.event.admin.entity.Lieu;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LieuRepository extends JpaRepository<Lieu, Long> {
