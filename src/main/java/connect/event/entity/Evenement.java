@@ -42,6 +42,9 @@ public class Evenement {
     @Column(name = "nombre_places", nullable = false)
     private int nombrePlaces;
 
+    public Evenement(Long id_evenement) {
+        this.id_evenement = id_evenement;
+    }
     @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Billet> billets = new ArrayList<>();
     @ManyToOne
