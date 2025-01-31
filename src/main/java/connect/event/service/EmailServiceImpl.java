@@ -25,4 +25,16 @@ public class EmailServiceImpl implements EmailService {
         message.setText("Votre code de validation est : " + code);
         javaMailSender.send(message);
     }
+    @Override
+    public void envoyerNotificationStatut(String to, String prenom, String nom, String nomEvenement, String statut) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(to);
+        message.setSubject("Mise à jour du statut de votre événement");
+        message.setText("Bonjour " + prenom + " " + nom + ",\n\n"
+                + "Votre événement \"" + nomEvenement + "\" a été " + statut + ".\n\n"
+                + "Cordialement,\nL'équipe de ConnectEvent.");
+
+        javaMailSender.send(message);
+    }
 }

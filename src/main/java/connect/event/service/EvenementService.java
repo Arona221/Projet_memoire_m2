@@ -10,6 +10,7 @@ import connect.event.enums.Status;
 import connect.event.enums.TypeUtilisateur;
 import connect.event.repository.EvenementRepository;
 import connect.event.repository.UtilisateurRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -26,6 +27,9 @@ public class EvenementService {
     private EvenementRepository evenementRepository;
     @Autowired
     private UtilisateurRepository utilisateurRepository;
+    @Autowired
+    private EmailService emailService;
+    @Transactional
 
     /**
      * Récupère tous les événements et les retourne sous forme de DTOs.
@@ -171,17 +175,29 @@ public class EvenementService {
         evenement.setStatus(dto.getStatus());
         return evenement;
     }
+
     public boolean updateStatus(Long idEvenement, Status status) {
         Evenement evenement = evenementRepository.findById(idEvenement)
                 .orElseThrow(() -> new IllegalArgumentException("Événement introuvable"));
 
-        // On peut ajouter une vérification pour voir si l'événement est déjà approuvé ou rejeté
+        // Vérifier si l'événement est déjà approuvé ou annulé
         if (evenement.getStatus() == Status.APPROUVE || evenement.getStatus() == Status.ANNULE) {
             throw new IllegalStateException("L'événement a déjà un statut final.");
         }
 
         evenement.setStatus(status);
         evenementRepository.save(evenement);
+
+        // Envoyer un email à l'organisateur
+        Utilisateur organisateur = evenement.getOrganisateur();
+        emailService.envoyerNotificationStatut(
+                organisateur.getEmail(),
+                organisateur.getPrenom(),
+                organisateur.getNom(),
+                evenement.getNom(),
+                status.name()
+        );
+
         return true;
     }
     /**

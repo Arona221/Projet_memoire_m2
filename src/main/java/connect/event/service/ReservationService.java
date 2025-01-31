@@ -1,6 +1,6 @@
 package connect.event.service;
 import connect.event.admin.entity.Ressource;
-import connect.event.admin.repository.ReservationRepository;
+import connect.event.repository.ReservationRepository;
 import connect.event.admin.repository.RessourceRepository;
 import connect.event.dto.ReservationDTO;
 import connect.event.entity.Reservation;

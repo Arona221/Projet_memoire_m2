@@ -1,4 +1,4 @@
-package connect.event.admin.repository;
+package connect.event.repository;
 
 import connect.event.entity.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;

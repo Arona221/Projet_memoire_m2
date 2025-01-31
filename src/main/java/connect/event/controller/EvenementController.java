@@ -20,7 +20,8 @@ public class EvenementController {
     private EvenementService evenementService;
 
     @GetMapping
-    public List<EvenementDTO> getAllEvenements() {
+    public List<EvenementDTO> getAllEvenements()
+    {
         return evenementService.getAllEvenements();
     }
 
