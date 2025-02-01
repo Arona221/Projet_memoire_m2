@@ -1,11 +1,13 @@
 package connect.event.controller;
 
+import connect.event.admin.service.EmailService;
 import connect.event.dto.EvenementDTO;
 import connect.event.entity.Evenement;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import connect.event.service.EvenementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +20,8 @@ import java.util.List;
 public class EvenementController {
     @Autowired
     private EvenementService evenementService;
-
+    @Qualifier("adminEmailService")  // Spécifie le bean à injecter
+    private EmailService emailService;
     @GetMapping
     public List<EvenementDTO> getAllEvenements()
     {

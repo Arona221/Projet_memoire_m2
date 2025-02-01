@@ -11,6 +11,8 @@ import connect.event.enums.TypeUtilisateur;
 import connect.event.repository.EvenementRepository;
 import connect.event.repository.UtilisateurRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -29,6 +31,8 @@ public class EvenementService {
     private UtilisateurRepository utilisateurRepository;
     @Autowired
     private EmailService emailService;
+
+    private static final Logger logger = LoggerFactory.getLogger(EvenementService.class);
     @Transactional
 
     /**
@@ -176,6 +180,7 @@ public class EvenementService {
         return evenement;
     }
 
+    @Transactional
     public boolean updateStatus(Long idEvenement, Status status) {
         Evenement evenement = evenementRepository.findById(idEvenement)
                 .orElseThrow(() -> new IllegalArgumentException("Événement introuvable"));
@@ -273,6 +278,7 @@ public class EvenementService {
         // Par défaut, si aucun paramètre n'est donné
         return Collections.emptyList(); // Aucun événement trouvé
     }
+
 
 
 

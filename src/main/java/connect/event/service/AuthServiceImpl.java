@@ -10,6 +10,7 @@ import connect.event.repository.UtilisateurRepository;
 import connect.event.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private EmailService emailService;
-
     @Autowired
     private JwtUtil jwtUtil;
     @Override
