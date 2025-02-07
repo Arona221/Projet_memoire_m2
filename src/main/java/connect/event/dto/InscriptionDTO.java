@@ -1,10 +1,7 @@
 package connect.event.dto;
 
 import connect.event.enums.TypeUtilisateur;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -23,7 +20,7 @@ public class InscriptionDTO {
     @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères")
     private String motDePasse;
     @NotBlank(message = "Le numero de telephone est obligatoire")
-    @Size(min = 9, message = "Le numero de telephone  au moins 9 caractères")
+    @Pattern(regexp = "^\\+?[0-9]+$", message = "Numéro de téléphone invalide")
     private String phoneNumber;
     @NotNull(message = "Le type d'utilisateur est obligatoire")
     private TypeUtilisateur typeUtilisateur;

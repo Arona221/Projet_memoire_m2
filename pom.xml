@@ -48,6 +48,7 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+
 		<!-- Base de données -->
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -110,6 +111,7 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 
 		<!-- Dépendances optionnelles -->
 		<dependency>

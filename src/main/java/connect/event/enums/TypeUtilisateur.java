@@ -2,5 +2,6 @@ package connect.event.enums;
 
 public enum TypeUtilisateur {
     PARTICIPANT,
-    ORGANISATEUR
+    ORGANISATEUR,
+    EQUIPEMARKETING
 }

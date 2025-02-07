@@ -41,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setPrenom(dto.getPrenom());
         utilisateur.setNom(dto.getNom());
         utilisateur.setEmail(dto.getEmail());
+        utilisateur.setPhoneNumber(String.valueOf(dto.getPhoneNumber()));
         utilisateur.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         utilisateur.setTypeUtilisateur(dto.getTypeUtilisateur());
         // Générer le code de validation
