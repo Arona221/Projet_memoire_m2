@@ -1,5 +1,7 @@
 package connect.event.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,16 +14,17 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Entity
 public class Billet {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Clé primaire unique pour chaque billet
+    private Long id;
 
-    private String typeBillet; // Exemple: VIP, Standard, Étudiant
-    private BigDecimal prix;   // Prix du billet
-    private Integer quantite;  // Quantité disponible
+    private String typeBillet;
+    private BigDecimal prix;
+    private Integer quantite;
 
     @ManyToOne
-    @JoinColumn(name = "evenement_id", nullable = false) // Association à l'événement parent
+    @JoinColumn(name = "evenement_id")
+    @JsonBackReference // Ignore la sérialisation de la référence à Evenement
     private Evenement evenement;
+
 }

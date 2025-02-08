@@ -1,5 +1,6 @@
 package connect.event.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import connect.event.enums.TypeUtilisateur;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class Utilisateur {
     @Column(nullable = false, unique = true)
     private String email;
     private String phoneNumber;
-
+    @JsonIgnore
     @Column(nullable = false)
     private String motDePasse;
 

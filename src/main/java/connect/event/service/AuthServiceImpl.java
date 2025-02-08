@@ -10,7 +10,6 @@ import connect.event.repository.UtilisateurRepository;
 import connect.event.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,34 +27,44 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private EmailService emailService;
+
     @Autowired
     private JwtUtil jwtUtil;
+
+    /**
+     * Inscription d'un nouvel utilisateur.
+     */
     @Override
     public TokenDTO inscription(InscriptionDTO dto) {
-        // Vérifier si l'email existe déjà
         if (utilisateurRepository.existsByEmail(dto.getEmail())) {
             throw new EmailDejaExisteException("Cet email est déjà utilisé");
         }
-        // Créer l'utilisateur
+
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setPrenom(dto.getPrenom());
         utilisateur.setNom(dto.getNom());
         utilisateur.setEmail(dto.getEmail());
-        utilisateur.setPhoneNumber(String.valueOf(dto.getPhoneNumber()));
+        utilisateur.setPhoneNumber(dto.getPhoneNumber());
         utilisateur.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         utilisateur.setTypeUtilisateur(dto.getTypeUtilisateur());
-        // Générer le code de validation
+
+        // Génération du code de validation
         String code = genererCode();
         utilisateur.setCodeValidation(code);
         utilisateur.setCodeValidationExpiration(LocalDateTime.now().plusHours(24));
-        // Sauvegarder l'utilisateur
+
         utilisateurRepository.save(utilisateur);
 
-        // Envoyer l'email
         emailService.envoyerCodeValidation(utilisateur.getEmail(), code);
 
-        return new TokenDTO(jwtUtil.generateToken(String.valueOf(utilisateur)));
+        String token = jwtUtil.generateToken(utilisateur.getEmail());
+
+        return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }
+
+    /**
+     * Connexion d'un utilisateur existant.
+     */
     @Override
     public TokenDTO connexion(ConnexionDTO dto) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(dto.getEmail())
@@ -69,8 +78,14 @@ public class AuthServiceImpl implements AuthService {
             throw new CredentialsInvalidesException("Email ou mot de passe incorrect");
         }
 
-        return new TokenDTO(jwtUtil.generateToken(String.valueOf(utilisateur)));
+        String token = jwtUtil.generateToken(utilisateur.getEmail());
+
+        return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }
+
+    /**
+     * Validation du compte via le code envoyé par email.
+     */
     @Override
     public TokenDTO validerCompte(ValidationCompteDTO dto) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(dto.getEmail())
@@ -93,9 +108,14 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setCodeValidationExpiration(null);
         utilisateurRepository.save(utilisateur);
 
-        return new TokenDTO(jwtUtil.generateToken(String.valueOf(utilisateur)));
+        String token = jwtUtil.generateToken(utilisateur.getEmail());
+
+        return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }
 
+    /**
+     * Génération d'un code de validation aléatoire à 6 chiffres.
+     */
     private String genererCode() {
         return String.format("%06d", new Random().nextInt(999999));
     }
