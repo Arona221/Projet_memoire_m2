@@ -5,6 +5,7 @@ import connect.event.enums.TypeUtilisateur;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -29,6 +30,10 @@ public class Utilisateur {
 
     @Enumerated(EnumType.STRING)
     private TypeUtilisateur typeUtilisateur;
+    @OneToMany(mappedBy = "organisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Empêche la sérialisation infinie
+    private List<Evenement> evenements;
+
 
     private Boolean active = false;
     private String codeValidation;

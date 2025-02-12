@@ -24,7 +24,8 @@ public class Billet {
 
     @ManyToOne
     @JoinColumn(name = "evenement_id")
-    @JsonBackReference // Ignore la sérialisation de la référence à Evenement
+    @JsonIgnore // Empêche la sérialisation infinie
     private Evenement evenement;
+
 
 }

@@ -1,5 +1,6 @@
 package connect.event.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import jakarta.persistence.*;
@@ -25,8 +26,8 @@ public class Evenement {
 
     @Temporal(TemporalType.DATE)
     private Date date;
-
     private String lieu;
+    private String heure;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -37,7 +38,7 @@ public class Evenement {
     @Enumerated(EnumType.STRING)
     private Status status = Status.EN_ATTENTE;
 
-    private String image;
+    private String imagePath; // Ajoutez ce champ
 
     @Column(name = "nombre_places", nullable = false)
     private int nombrePlaces;
@@ -45,8 +46,11 @@ public class Evenement {
     public Evenement(Long id_evenement) {
         this.id_evenement = id_evenement;
     }
+
     @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // Gère la sérialisation dans un seul sens
     private List<Billet> billets = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "idOrganisateur", nullable = false)
     private Utilisateur organisateur;

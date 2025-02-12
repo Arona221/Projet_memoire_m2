@@ -16,29 +16,36 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.File;
 
 @Service
 public class EvenementService {
 
     @Autowired
     private EvenementRepository evenementRepository;
+
     @Autowired
     private UtilisateurRepository utilisateurRepository;
+
     @Autowired
     private EmailService emailService;
 
     private static final Logger logger = LoggerFactory.getLogger(EvenementService.class);
-    @Transactional
+
+    private static final String UPLOAD_DIR = "uploads"; // Chemin relatif au projet
 
     /**
      * Récupère tous les événements et les retourne sous forme de DTOs.
-     *
-     * @return Liste des EvenementDTO.
      */
     public List<EvenementDTO> getAllEvenements() {
         return evenementRepository.findAll()
@@ -49,9 +56,6 @@ public class EvenementService {
 
     /**
      * Récupère un événement par son ID.
-     *
-     * @param id Identifiant de l'événement.
-     * @return EvenementDTO correspondant, ou null si introuvable.
      */
     public EvenementDTO getEvenementById(Long id) {
         validateId(id);
@@ -62,19 +66,11 @@ public class EvenementService {
 
     /**
      * Enregistre ou met à jour un événement.
-     *
-     * @param evenementDTO Les données de l'événement sous forme de DTO.
-     * @return Le DTO de l'événement enregistré ou mis à jour.
      */
-
-
-
-    public Evenement createEvenement(EvenementDTO evenementDTO, Long idUtilisateur) {
-        // Récupérer l'utilisateur par son ID
+    public Evenement createEvenement(EvenementDTO evenementDTO, Long idUtilisateur, MultipartFile imageFile) throws IOException {
         Utilisateur utilisateur = utilisateurRepository.findById(idUtilisateur)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
 
-        // Vérifier si l'utilisateur est bien un organisateur
         if (utilisateur.getTypeUtilisateur() != TypeUtilisateur.ORGANISATEUR) {
             throw new IllegalArgumentException("L'utilisateur doit être un organisateur.");
         }
@@ -85,14 +81,16 @@ public class EvenementService {
         evenement.setLieu(evenementDTO.getLieu());
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());
-        evenement.setStatus(evenementDTO.getStatus());
-        evenement.setImage(evenementDTO.getImage());
-        evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
-
-        // Définir le statut par défaut à EN_ATTENTE
         evenement.setStatus(Status.EN_ATTENTE);
-        // Associer l'organisateur à l'événement
+        evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
         evenement.setOrganisateur(utilisateur);
+        evenement.setHeure(evenementDTO.getHeure());
+
+        // Gestion de l'image
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            evenement.setImagePath(imagePath); // Stocke uniquement le nom du fichier
+        }
 
         // Conversion des billets DTO en entités
         List<Billet> billets = evenementDTO.getBillets().stream().map(billetDTO -> {
@@ -100,21 +98,16 @@ public class EvenementService {
             billet.setTypeBillet(billetDTO.getTypeBillet());
             billet.setPrix(billetDTO.getPrix());
             billet.setQuantite(billetDTO.getQuantite());
-            billet.setEvenement(evenement); // Lien avec l'événement
+            billet.setEvenement(evenement);
             return billet;
         }).collect(Collectors.toList());
 
         evenement.setBillets(billets);
 
-        // Sauvegarde dans le dépôt
         return evenementRepository.save(evenement);
     }
-
-
     /**
      * Supprime un événement par son ID.
-     *
-     * @param id Identifiant de l'événement à supprimer.
      */
     public void deleteEvenement(Long id) {
         validateId(id);
@@ -126,21 +119,6 @@ public class EvenementService {
     private void validateId(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("L'identifiant ne peut pas être null.");
-        }
-    }
-
-    private void validateEvenementDTO(EvenementDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("L'objet EvenementDTO ne peut pas être null.");
-        }
-        if (!StringUtils.hasText(dto.getNom())) {
-            throw new IllegalArgumentException("Le nom de l'événement est obligatoire.");
-        }
-        if (dto.getDate() == null) {
-            throw new IllegalArgumentException("La date de l'événement est obligatoire.");
-        }
-        if (!StringUtils.hasText(dto.getLieu())) {
-            throw new IllegalArgumentException("Le lieu de l'événement est obligatoire.");
         }
     }
 
@@ -161,23 +139,11 @@ public class EvenementService {
                 evenement.getCategorie(),
                 evenement.getStatus(),
                 evenement.getNombrePlaces(),
-                evenement.getImage(),
+                evenement.getImagePath(),
                 billetsDTO,
-                evenement.getId_evenement()
+                evenement.getId_evenement(),
+                evenement.getHeure()  // Incluez l'heure ici
         );
-    }
-
-    private Evenement convertToEntity(EvenementDTO dto) {
-        Evenement evenement = new Evenement();
-        evenement.setNom(dto.getNom());
-        evenement.setDate(dto.getDate());
-        evenement.setLieu(dto.getLieu());
-        evenement.setDescription(dto.getDescription());
-        evenement.setCategorie(dto.getCategorie());
-        evenement.setNombrePlaces(dto.getNombrePlaces());
-        evenement.setImage(dto.getImage());
-        evenement.setStatus(dto.getStatus());
-        return evenement;
     }
 
     @Transactional
@@ -205,16 +171,11 @@ public class EvenementService {
 
         return true;
     }
+
     /**
      * Recherche des événements en fonction des filtres.
-     *
-     * @param categorie La catégorie d'événements (optionnel).
-     * @param date      La date de l'événement (optionnel).
-     * @param lieu      Le lieu de l'événement (optionnel).
-     * @return Liste des événements filtrés.
      */
     public List<EvenementDTO> searchEvenements(Categorie categorie, Date date, String lieu) {
-        // Si tous les paramètres sont null, on renvoie tous les événements
         if (categorie == null && date == null && lieu == null) {
             return evenementRepository.findAll()
                     .stream()
@@ -222,16 +183,13 @@ public class EvenementService {
                     .collect(Collectors.toList());
         }
 
-        // Si la catégorie est non nulle, on la filtre
         if (categorie != null && date != null && lieu != null) {
-            // Tous les paramètres sont fournis
             return evenementRepository.findByCategorieAndDateAndLieu(categorie, date, lieu)
                     .stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
         }
 
-        // Recherche avec un seul ou deux filtres
         if (categorie != null && date != null) {
             return evenementRepository.findByCategorieAndDate(categorie, date)
                     .stream()
@@ -253,33 +211,31 @@ public class EvenementService {
                     .collect(Collectors.toList());
         }
 
-        // Recherche avec un seul filtre
-        if (categorie != null) {
-            return evenementRepository.findByCategorie(categorie)
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        }
-
-        if (date != null) {
-            return evenementRepository.findByDate(date)
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        }
-
-        if (lieu != null) {
-            return evenementRepository.findByLieu(lieu)
-                    .stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-        }
-
-        // Par défaut, si aucun paramètre n'est donné
-        return Collections.emptyList(); // Aucun événement trouvé
+        return Collections.emptyList();
     }
 
+    public Page<EvenementDTO> getEvenementsByOrganisateur(Long idOrganisateur, int page, int size, String search, Status status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Evenement> evenementsPage = evenementRepository.findByOrganisateur_IdUtilisateur(idOrganisateur, pageable);
+        return evenementsPage.map(this::convertToDTO);
+    }
 
+    public String saveImage(MultipartFile imageFile) throws IOException {
+        if (imageFile.isEmpty()) {
+            throw new IOException("Le fichier est vide.");
+        }
 
+        String uploadDirectory = "C:/Users/Arona Ndiaye/OneDrive/Documents/Document/Memoire_M2/Projet_memoire_m2/images"; // Chemin de stockage des images
+        File directory = new File(uploadDirectory);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Crée le répertoire s'il n'existe pas
+        }
 
+        String originalFilename = imageFile.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "_" + originalFilename; // Nom unique pour éviter les conflits
+        Path path = Paths.get(uploadDirectory, fileName);
+        imageFile.transferTo(path.toFile());
+
+        return fileName; // Retourne uniquement le nom du fichier
+    }
 }

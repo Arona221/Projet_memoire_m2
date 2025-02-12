@@ -1,5 +1,6 @@
 package connect.event.participant.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import connect.event.entity.Billet;
 import connect.event.entity.Evenement;
 import connect.event.entity.Utilisateur;
@@ -23,6 +24,7 @@ public class BilletAcheter {
 
     @ManyToOne
     @JoinColumn(name = "id_evenement", nullable = false)
+    @JsonBackReference
     private Evenement evenement;
 
     @ManyToOne
