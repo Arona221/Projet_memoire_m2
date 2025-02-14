@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -57,7 +59,9 @@ public class AuthServiceImpl implements AuthService {
 
         emailService.envoyerCodeValidation(utilisateur.getEmail(), code);
 
-        String token = jwtUtil.generateToken(utilisateur.getEmail());
+        // Passer une liste vide ou des rôles, selon le besoin
+        List<String> roles = new ArrayList<>(); // Liste vide, mais vous pouvez ajouter des rôles si nécessaire
+        String token = jwtUtil.generateToken(utilisateur.getEmail(), roles);
 
         return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }
@@ -78,7 +82,9 @@ public class AuthServiceImpl implements AuthService {
             throw new CredentialsInvalidesException("Email ou mot de passe incorrect");
         }
 
-        String token = jwtUtil.generateToken(utilisateur.getEmail());
+        // Passer une liste vide ou des rôles, selon le besoin
+        List<String> roles = new ArrayList<>(); // Liste vide, mais vous pouvez ajouter des rôles si nécessaire
+        String token = jwtUtil.generateToken(utilisateur.getEmail(), roles);
 
         return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }
@@ -108,7 +114,9 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setCodeValidationExpiration(null);
         utilisateurRepository.save(utilisateur);
 
-        String token = jwtUtil.generateToken(utilisateur.getEmail());
+        // Passer une liste vide ou des rôles, selon le besoin
+        List<String> roles = new ArrayList<>(); // Liste vide, mais vous pouvez ajouter des rôles si nécessaire
+        String token = jwtUtil.generateToken(utilisateur.getEmail(), roles);
 
         return new TokenDTO(token, utilisateur.getTypeUtilisateur().name(), utilisateur.getNom(), utilisateur.getEmail(), utilisateur.getIdUtilisateur());
     }

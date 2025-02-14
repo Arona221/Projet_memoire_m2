@@ -7,28 +7,39 @@ import connect.event.entity.Evenement;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import connect.event.service.EvenementService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
-
-
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+
+
 
 @RestController
 @RequestMapping("/evenements")
 public class EvenementController {
     @Autowired
     private EvenementService evenementService;
+
     @Qualifier("adminEmailService")  // Spécifie le bean à injecter
     private EmailService emailService;
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEvenement(@PathVariable Long id) {
+        evenementService.deleteEvenement(id);
+        return ResponseEntity.noContent().build();
+    }
     @GetMapping
     public List<EvenementDTO> getAllEvenements()
     {
@@ -58,11 +69,7 @@ public class EvenementController {
         return ResponseEntity.ok(newEvenement);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvenement(@PathVariable Long id) {
-        evenementService.deleteEvenement(id);
-        return ResponseEntity.noContent().build();
-    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(@PathVariable Long id, @RequestParam Status status) {
         boolean updated = evenementService.updateStatus(id, status);
@@ -99,4 +106,6 @@ public class EvenementController {
         Page<EvenementDTO> evenements = evenementService.getEvenementsByOrganisateur(idOrganisateur, page, size, search, status);
         return ResponseEntity.ok(evenements);
     }
+
+
 }

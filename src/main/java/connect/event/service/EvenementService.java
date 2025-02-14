@@ -20,13 +20,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.data.jpa.domain.Specification;
+import connect.event.specifications.EvenementSpecifications;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
+import java.time.LocalDate;
+
 
 @Service
 public class EvenementService {
@@ -214,28 +217,119 @@ public class EvenementService {
         return Collections.emptyList();
     }
 
-    public Page<EvenementDTO> getEvenementsByOrganisateur(Long idOrganisateur, int page, int size, String search, Status status) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Evenement> evenementsPage = evenementRepository.findByOrganisateur_IdUtilisateur(idOrganisateur, pageable);
-        return evenementsPage.map(this::convertToDTO);
-    }
-
     public String saveImage(MultipartFile imageFile) throws IOException {
         if (imageFile.isEmpty()) {
             throw new IOException("Le fichier est vide.");
         }
 
-        String uploadDirectory = "C:/Users/Arona Ndiaye/OneDrive/Documents/Document/Memoire_M2/Projet_memoire_m2/images"; // Chemin de stockage des images
+        // Définition du répertoire de téléchargement
+        String uploadDirectory = "C:/Users/Arona Ndiaye/OneDrive/Documents/Document/Memoire_M2/Projet_memoire_m2/images/"; // Chemin absolu
+
+        // Vérification si le répertoire existe, sinon le créer
         File directory = new File(uploadDirectory);
         if (!directory.exists()) {
             directory.mkdirs(); // Crée le répertoire s'il n'existe pas
         }
 
+        // Génération d'un nom unique pour l'image
         String originalFilename = imageFile.getOriginalFilename();
         String fileName = UUID.randomUUID() + "_" + originalFilename; // Nom unique pour éviter les conflits
+
+        // Créer le chemin complet du fichier à enregistrer
         Path path = Paths.get(uploadDirectory, fileName);
+
+        // Transfert du fichier vers le répertoire
         imageFile.transferTo(path.toFile());
 
         return fileName; // Retourne uniquement le nom du fichier
     }
+
+    public Page<EvenementDTO> getEvenementsByOrganisateur(
+            Long idOrganisateur,
+            int page,
+            int size,
+            String search,
+            Status status
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gérer toutes les combinaisons de filtres
+        if (search != null && !search.isEmpty() && status != null) {
+            return evenementRepository
+                    .findByOrganisateur_IdUtilisateurAndStatusAndNomContainingIgnoreCase(
+                            idOrganisateur,
+                            status,
+                            search,
+                            pageable
+                    )
+                    .map(this::convertToDTO);
+
+        } else if (search != null && !search.isEmpty()) {
+            return evenementRepository
+                    .findByOrganisateur_IdUtilisateurAndNomContainingIgnoreCase(
+                            idOrganisateur,
+                            search,
+                            pageable
+                    )
+                    .map(this::convertToDTO);
+
+        } else if (status != null) {
+            return evenementRepository
+                    .findByOrganisateur_IdUtilisateurAndStatus(
+                            idOrganisateur,
+                            status,
+                            pageable
+                    )
+                    .map(this::convertToDTO);
+
+        } else {
+            return evenementRepository
+                    .findByOrganisateur_IdUtilisateur(idOrganisateur, pageable)
+                    .map(this::convertToDTO);
+        }
+    }
+
+    @Transactional
+    public Evenement updateEvenement(Long id, EvenementDTO evenementDTO, Long idUtilisateur, MultipartFile imageFile) throws IOException {
+        Evenement evenement = evenementRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Événement non trouvé"));
+
+        // Vérification des droits
+        if (!evenement.getOrganisateur().getIdUtilisateur().equals(idUtilisateur)) {
+            throw new SecurityException("Vous n'êtes pas autorisé à modifier cet événement.");
+        }
+
+        // Mise à jour des champs de base
+        evenement.setNom(evenementDTO.getNom());
+        evenement.setDate(evenementDTO.getDate());
+        evenement.setLieu(evenementDTO.getLieu());
+        evenement.setDescription(evenementDTO.getDescription());
+        evenement.setCategorie(evenementDTO.getCategorie());
+        evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
+        evenement.setHeure(evenementDTO.getHeure());
+
+        // Gestion de l'image
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imagePath = saveImage(imageFile);
+            evenement.setImagePath(imagePath);
+        }
+
+        // Mise à jour des billets
+        evenement.getBillets().clear();
+        List<Billet> nouveauxBillets = evenementDTO.getBillets().stream()
+                .map(billetDTO -> {
+                    Billet billet = new Billet();
+                    billet.setTypeBillet(billetDTO.getTypeBillet());
+                    billet.setPrix(billetDTO.getPrix());
+                    billet.setQuantite(billetDTO.getQuantite());
+                    billet.setEvenement(evenement);
+                    return billet;
+                })
+                .collect(Collectors.toList());
+        evenement.getBillets().addAll(nouveauxBillets);
+
+        return evenementRepository.save(evenement);
+    }
+
+
 }

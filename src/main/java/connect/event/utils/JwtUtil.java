@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -24,6 +25,11 @@ public class JwtUtil {
     // Méthode pour extraire le nom d'utilisateur du token
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    // Méthode pour extraire les rôles du token
+    public List<String> getRolesFromToken(String token) {
+        return getClaimFromToken(token, claims -> claims.get("roles", List.class));
     }
 
     // Méthode générique pour extraire une revendication spécifique du token
@@ -63,10 +69,11 @@ public class JwtUtil {
     }
 
     // Méthode pour générer un nouveau token
-    public String generateToken(String username) {
+    public String generateToken(String username, List<String> roles) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roles) // Ajouter les rôles dans le token
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000))
                 .signWith(key)
