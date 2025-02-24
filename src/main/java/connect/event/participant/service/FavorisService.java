@@ -1,35 +1,26 @@
 package connect.event.participant.service;
 
-import connect.event.entity.Utilisateur;
 import connect.event.entity.Evenement;
+import connect.event.entity.Utilisateur;
 import connect.event.participant.entity.Favoris;
 import connect.event.participant.repository.FavorisRepository;
-import connect.event.repository.UtilisateurRepository;
 import connect.event.repository.EvenementRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import connect.event.repository.UtilisateurRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class FavorisService {
 
-    @Autowired
-    private FavorisRepository favorisRepository;
+    private final FavorisRepository favorisRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final EvenementRepository evenementRepository;
 
-    @Autowired
-    private UtilisateurRepository utilisateurRepository;
-
-    @Autowired
-    private EvenementRepository evenementRepository;
-
-    /**
-     * Ajoute un événement aux favoris d'un utilisateur.
-     *
-     * @param idUtilisateur L'ID de l'utilisateur (participant).
-     * @param idEvenement   L'ID de l'événement à ajouter aux favoris.
-     */
+    @Transactional
     public void addToFavorites(Long idUtilisateur, Long idEvenement) {
         Utilisateur utilisateur = utilisateurRepository.findById(idUtilisateur)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
@@ -37,40 +28,30 @@ public class FavorisService {
         Evenement evenement = evenementRepository.findById(idEvenement)
                 .orElseThrow(() -> new IllegalArgumentException("Événement non trouvé"));
 
-        // Vérifier si l'événement est déjà dans les favoris
-        Optional<Favoris> favoris = favorisRepository.findByUtilisateurAndEvenement(utilisateur, evenement);
-        if (favoris.isPresent()) {
-            throw new IllegalArgumentException("Cet événement est déjà dans vos favoris.");
+        if (favorisRepository.existsByUtilisateurIdAndEvenementId(idUtilisateur, idEvenement)) {
+            throw new IllegalArgumentException("Événement déjà en favoris");
         }
 
-        // Ajouter à la liste des favoris
-        Favoris newFavoris = new Favoris();
-        newFavoris.setUtilisateur(utilisateur);
-        newFavoris.setEvenement(evenement);
-        favorisRepository.save(newFavoris);
+        Favoris favoris = new Favoris();
+        favoris.setUtilisateur(utilisateur);
+        favoris.setEvenement(evenement);
+        favorisRepository.save(favoris);
     }
 
-    /**
-     * Retire un événement des favoris d'un utilisateur.
-     *
-     * @param idUtilisateur L'ID de l'utilisateur (participant).
-     * @param idEvenement   L'ID de l'événement à retirer des favoris.
-     */
     @Transactional
     public void removeFromFavorites(Long idUtilisateur, Long idEvenement) {
-        Utilisateur utilisateur = utilisateurRepository.findById(idUtilisateur)
-                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
-
-        Evenement evenement = evenementRepository.findById(idEvenement)
-                .orElseThrow(() -> new IllegalArgumentException("Événement non trouvé"));
-
-        // Vérifier si l'événement est dans les favoris
-        Optional<Favoris> favoris = favorisRepository.findByUtilisateurAndEvenement(utilisateur, evenement);
-        if (favoris.isEmpty()) {
-            throw new IllegalArgumentException("Cet événement n'est pas dans vos favoris.");
+        if (!favorisRepository.existsByUtilisateurIdAndEvenementId(idUtilisateur, idEvenement)) {
+            throw new IllegalArgumentException("Événement non trouvé dans les favoris");
         }
-
-        // Supprimer de la liste des favoris
         favorisRepository.deleteByUtilisateurIdAndEvenementId(idUtilisateur, idEvenement);
+    }
+
+    public boolean isFavorite(Long idUtilisateur, Long idEvenement) {
+        return favorisRepository.existsByUtilisateurIdAndEvenementId(idUtilisateur, idEvenement);
+    }
+
+    public Page<Evenement> getFavorisUtilisateur(Long utilisateurId, Pageable pageable) {
+        return favorisRepository.findByUtilisateurIdUtilisateur(utilisateurId, pageable)
+                .map(Favoris::getEvenement);
     }
 }

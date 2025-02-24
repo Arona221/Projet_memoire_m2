@@ -1,8 +1,10 @@
 package connect.event.repository;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import connect.event.entity.Evenement;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Page;
@@ -12,7 +14,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import java.util.Date;
 import java.util.List;
 
-public interface EvenementRepository extends JpaRepository <Evenement, Long>  {
+public interface EvenementRepository extends JpaRepository <Evenement, Long>,JpaSpecificationExecutor<Evenement>  {
     List<Evenement> findByCategorieAndDateAndLieu(Categorie categorie, Date date, String lieu);
 
     List<Evenement> findByCategorieAndDate(Categorie categorie, Date date);
@@ -51,5 +53,7 @@ public interface EvenementRepository extends JpaRepository <Evenement, Long>  {
             String nom,
             Pageable pageable
     );
+
+
 
 }

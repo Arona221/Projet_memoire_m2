@@ -1,4 +1,4 @@
-package connect.event.equipeMarketing.cotroller;
+package connect.event.equipeMarketing.controller;
 
 import connect.event.equipeMarketing.entity.SegmentAudience;
 import connect.event.equipeMarketing.service.SegmentAudienceService;

@@ -1,4 +1,4 @@
-package connect.event.equipeMarketing.cotroller;
+package connect.event.equipeMarketing.controller;
 
 import connect.event.equipeMarketing.entity.Conversion;
 import connect.event.equipeMarketing.service.ConversionService;

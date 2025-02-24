@@ -1,9 +1,7 @@
-package connect.event.equipeMarketing.cotroller;
+package connect.event.equipeMarketing.controller;
 
 import connect.event.equipeMarketing.DTO.MessageRequest;
-import connect.event.equipeMarketing.entity.CampagneMarketing;
 import connect.event.equipeMarketing.entity.MessageMarketing;
-import connect.event.equipeMarketing.service.CampagneMarketingService;
 import connect.event.equipeMarketing.service.MessageMarketingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

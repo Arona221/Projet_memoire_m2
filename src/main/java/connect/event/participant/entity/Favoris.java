@@ -3,26 +3,25 @@ package connect.event.participant.entity;
 import connect.event.entity.Evenement;
 import connect.event.entity.Utilisateur;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "favoris")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Favoris {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idFavoris;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_utilisateur", nullable = false)
+    @JoinColumn(name = "utilisateur_id", referencedColumnName = "idUtilisateur")
     private Utilisateur utilisateur;
 
     @ManyToOne
-    @JoinColumn(name = "id_evenement", nullable = false)
+    @JoinColumn(name = "evenement_id", referencedColumnName = "id_evenement")
     private Evenement evenement;
+
+    private LocalDateTime dateAjout = LocalDateTime.now();
 }

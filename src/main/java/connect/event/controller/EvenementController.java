@@ -106,6 +106,23 @@ public class EvenementController {
         Page<EvenementDTO> evenements = evenementService.getEvenementsByOrganisateur(idOrganisateur, page, size, search, status);
         return ResponseEntity.ok(evenements);
     }
+    @GetMapping("/approved")
+    public ResponseEntity<Page<EvenementDTO>> getApprovedEvents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String categorie,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam(required = false) String lieu) {
+
+        Page<EvenementDTO> events = evenementService.getApprovedEvents(page, size, search, categorie, date, lieu);
+        return ResponseEntity.ok(events);
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
 
 
 }

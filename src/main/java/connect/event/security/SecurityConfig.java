@@ -40,6 +40,7 @@ public class SecurityConfig {
                         // Autres configurations
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ConnectEvent/evenements/approved").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/ConnectEvent/evenements").hasAnyRole("ORGANISATEUR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/ConnectEvent/evenements/**").hasAnyRole("ORGANISATEUR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/ConnectEvent/evenements/**").hasAnyRole("ORGANISATEUR", "ADMIN")

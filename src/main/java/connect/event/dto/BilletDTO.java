@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 
 public class BilletDTO {
+    private int id;
     private String typeBillet;
     private BigDecimal prix;
     private Integer quantite;

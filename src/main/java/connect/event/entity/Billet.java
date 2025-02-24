@@ -23,7 +23,7 @@ public class Billet {
     private Integer quantite;
 
     @ManyToOne
-    @JoinColumn(name = "evenement_id")
+    @JoinColumn(name = "evenement_id", nullable = false)
     @JsonIgnore // Empêche la sérialisation infinie
     private Evenement evenement;
 

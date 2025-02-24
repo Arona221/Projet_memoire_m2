@@ -1,5 +1,6 @@
 package connect.event.entity;
 import connect.event.admin.entity.Ressource;
+import connect.event.enums.StatutReservation;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -23,7 +24,13 @@ public class Reservation {
     @JoinColumn(name = "idRessource", nullable = false)
     private Ressource ressource;
 
-    private LocalDate date;
-    private LocalTime heure;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private double totalPrice;
+
+    @Enumerated(EnumType.STRING)
+    private StatutReservation statut = StatutReservation.EN_ATTENTE;
 }
 

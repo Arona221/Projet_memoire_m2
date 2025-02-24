@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.data.domain.Page;
@@ -129,6 +130,7 @@ public class EvenementService {
         List<BilletDTO> billetsDTO = evenement.getBillets()
                 .stream()
                 .map(billet -> new BilletDTO(
+                        Math.toIntExact(billet.getId()),
                         billet.getTypeBillet(),
                         billet.getPrix(),
                         billet.getQuantite()))
@@ -329,6 +331,26 @@ public class EvenementService {
         evenement.getBillets().addAll(nouveauxBillets);
 
         return evenementRepository.save(evenement);
+    }
+
+    public Page<EvenementDTO> getApprovedEvents(int page, int size, String search, String categorie, Date date, String lieu) {
+        // Créer la spécification
+        Specification<Evenement> spec = EvenementSpecifications.createSpecification(
+                search,
+                categorie,
+                date,
+                lieu,
+                Status.APPROUVE
+        );
+
+        // Créer l'objet Pageable avec tri par date décroissante
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+
+        // Exécuter la requête avec pagination
+        Page<Evenement> eventPage = evenementRepository.findAll(spec, pageable);
+
+        // Convertir les résultats en DTO
+        return eventPage.map(this::convertToDTO);
     }
 
 

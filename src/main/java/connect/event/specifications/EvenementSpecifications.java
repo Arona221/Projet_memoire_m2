@@ -4,27 +4,56 @@ import connect.event.entity.Evenement;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import org.springframework.data.jpa.domain.Specification;
-import java.time.LocalDate;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class EvenementSpecifications {
 
-    public static Specification<Evenement> withStatus(Status status) {
-        return (root, query, cb) -> cb.equal(root.get("status"), status);
-    }
+    public static Specification<Evenement> createSpecification(
+            String search,
+            String categorie,
+            Date date,
+            String lieu,
+            Status status) {
 
-    public static Specification<Evenement> withNameContaining(String name) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("nom")), "%" + name.toLowerCase() + "%");
-    }
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-    public static Specification<Evenement> withCategory(Categorie category) {
-        return (root, query, cb) -> cb.equal(root.get("categorie"), category);
-    }
+            // Ajouter toujours la condition de status APPROUVE
+            if (status != null) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
 
-    public static Specification<Evenement> withDate(LocalDate date) {
-        return (root, query, cb) -> cb.equal(root.get("date"), date);
-    }
+            // Recherche par nom
+            if (search != null && !search.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("nom")),
+                        "%" + search.toLowerCase() + "%"
+                ));
+            }
 
-    public static Specification<Evenement> withLocation(String location) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("lieu")), "%" + location.toLowerCase() + "%");
+            // Filtre par catégorie
+            if (categorie != null && !categorie.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.equal(
+                        root.get("categorie"),
+                        Categorie.valueOf(categorie.toUpperCase())
+                ));
+            }
+
+            // Filtre par date
+            if (date != null) {
+                predicates.add(criteriaBuilder.equal(root.get("date"), date));
+            }
+
+            // Filtre par lieu
+            if (lieu != null && !lieu.trim().isEmpty()) {
+                predicates.add(criteriaBuilder.equal(root.get("lieu"), lieu));
+            }
+
+            // Combine tous les prédicats avec AND
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
     }
 }

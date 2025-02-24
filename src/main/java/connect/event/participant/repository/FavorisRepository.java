@@ -1,24 +1,23 @@
 package connect.event.participant.repository;
 
 import connect.event.participant.entity.Favoris;
-import connect.event.entity.Utilisateur;
-import connect.event.entity.Evenement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface FavorisRepository extends JpaRepository<Favoris, Long> {
 
-    // Trouver un favoris par utilisateur et événement
-    Optional<Favoris> findByUtilisateurAndEvenement(Utilisateur utilisateur, Evenement evenement);
+    // Remplacer la méthode dérivée par une requête nommée
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN true ELSE false END FROM Favoris f WHERE f.utilisateur.idUtilisateur = ?1 AND f.evenement.id_evenement = ?2")
+    boolean existsByUtilisateurIdAndEvenementId(Long utilisateurId, Long evenementId);
 
-    // Supprimer un favoris par utilisateur et événement
-    @Modifying
     @Transactional
-    @Query("DELETE FROM Favoris f WHERE f.utilisateur.id = :idUtilisateur AND f.evenement.id = :idEvenement")
-    void deleteByUtilisateurIdAndEvenementId(@Param("idUtilisateur") Long idUtilisateur, @Param("idEvenement") Long idEvenement);
+    @Modifying
+    @Query("DELETE FROM Favoris f WHERE f.utilisateur.idUtilisateur = ?1 AND f.evenement.id_evenement = ?2")
+    void deleteByUtilisateurIdAndEvenementId(Long utilisateurId, Long evenementId);
+
+    Page<Favoris> findByUtilisateurIdUtilisateur(Long utilisateurId, Pageable pageable);
 }

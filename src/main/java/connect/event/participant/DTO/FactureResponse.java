@@ -10,4 +10,5 @@ public class FactureResponse {
     private String status;
     private String message;
     private String invoiceUrl;
+    private String referenceTransaction;
 }

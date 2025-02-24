@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BilletAcheterRepository extends JpaRepository<BilletAcheter, Long> {
-    Optional<BilletAcheter> findByReferenceTransaction(String referenceTransaction);
+    List<BilletAcheter> findByReferenceTransaction(String referenceTransaction);
+
     @Query("SELECT b.participant FROM BilletAcheter b WHERE b.evenement.id_evenement = :evenementId")
     List<Utilisateur> findParticipantsByEvenement(Long evenementId);
 }
