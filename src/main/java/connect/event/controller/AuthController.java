@@ -15,6 +15,7 @@ import connect.event.dto.ConnexionResponseDTO;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:4200")
 @Validated
 public class AuthController {
 

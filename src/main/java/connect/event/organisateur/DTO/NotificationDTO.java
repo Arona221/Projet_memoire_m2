@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Setter
 @ToString
 public class NotificationDTO {
+    private Long eventId;
     private Long idNotification;
     private LocalDate date;
     private String contenu;

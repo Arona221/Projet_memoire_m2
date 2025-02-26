@@ -1,6 +1,9 @@
 spring:
-  main:
-    allow-bean-definition-overriding: true
-  security:
-    filter:
-      order: 10
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: sales-analytics-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer

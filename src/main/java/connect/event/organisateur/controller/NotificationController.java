@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/notification")
+@CrossOrigin(origins = "http://localhost:4200")
 public class NotificationController {
     @Autowired
     private NotificationService notificationService;

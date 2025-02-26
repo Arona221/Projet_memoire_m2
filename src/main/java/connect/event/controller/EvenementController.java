@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -28,6 +27,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/evenements")
+@CrossOrigin(origins = "http://localhost:4200")
 public class EvenementController {
     @Autowired
     private EvenementService evenementService;

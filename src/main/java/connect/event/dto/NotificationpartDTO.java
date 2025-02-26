@@ -1,5 +1,6 @@
 package connect.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import connect.event.entity.Notificationpart;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 public class NotificationpartDTO {
     private Long id;
     private String message;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateEnvoi;
     private Long utilisateurId;
 

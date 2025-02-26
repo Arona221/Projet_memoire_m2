@@ -19,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ressources")
+@CrossOrigin(origins = "http://localhost:4200")
 @Tag(name = "Gestion des Ressources", description = "API pour la gestion des ressources événementielles")
 public class RessourceController {
 

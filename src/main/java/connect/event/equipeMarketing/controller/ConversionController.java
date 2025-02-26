@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/conversions")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ConversionController {
 
     @Autowired

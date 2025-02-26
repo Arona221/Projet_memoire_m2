@@ -1,5 +1,6 @@
 package connect.event.organisateur.entity;
 
+import connect.event.entity.Evenement;
 import connect.event.entity.Utilisateur;
 import connect.event.organisateur.enums.TypeNotification;
 import jakarta.persistence.*;
@@ -26,6 +27,9 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "idParticipant", nullable = false)
     private Utilisateur participant;
+    @ManyToOne
+    @JoinColumn(name = "id_evenement")
+    private Evenement evenement;
 
 
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/favoris")
+@CrossOrigin(origins = "http://localhost:4200")
 public class FavorisController {
 
     private final FavorisService favorisService;

@@ -54,6 +54,7 @@ public class NotificationService {
 
         for (Utilisateur participant : participants) {
             Notification notification = new Notification();
+            notification.setEvenement(evenement);
             notification.setDate(LocalDate.now());
             notification.setContenu(notificationDTO.getContenu());
             notification.setTypeNotification(TypeNotification.valueOf(notificationDTO.getTypeNotification()));

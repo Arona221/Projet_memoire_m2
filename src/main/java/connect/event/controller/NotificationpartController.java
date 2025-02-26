@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/notifications")
+@CrossOrigin(origins = "http://localhost:4200")
 public class NotificationpartController {
     @Autowired
     private NotificationpartService notificationService;
