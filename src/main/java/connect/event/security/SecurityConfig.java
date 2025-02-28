@@ -33,10 +33,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Permettre l'accès aux images sans authentification
                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/ConnectEvent/ws/**").permitAll() // Autoriser le WebSocket
+                        .requestMatchers("/api/ConnectEvent/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws/info/**").permitAll()
+                        .requestMatchers("/ws/*/websocket/**").permitAll()
+                        .requestMatchers("/ws/*/*/**").permitAll()
+                        .requestMatchers("/ws/info/**").permitAll()
+                        .requestMatchers("/ws/info").permitAll()
                         .requestMatchers("/api/ConnectEvent/**").permitAll()
                         .requestMatchers("/api/ConnectEvent/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ConnectEvent/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Autres configurations
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()

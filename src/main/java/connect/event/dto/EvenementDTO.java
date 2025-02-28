@@ -1,5 +1,6 @@
 package connect.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import connect.event.enums.Categorie;
 import connect.event.enums.Status;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +20,7 @@ public class EvenementDTO {
     @NotNull(message = "Le nom de l'événement ne peut pas être nul.")
     @Size(min = 1, max = 100, message = "Le nom de l'événement doit comporter entre 1 et 100 caractères.")
     private String nom;
-
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private Date date;
     private String description;
     private String lieu;

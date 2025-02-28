@@ -16,8 +16,11 @@ public class CorsConfig {
 
         // Autoriser les requêtes depuis localhost:4200
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:4200");
+        config.addAllowedOriginPattern("http://localhost:4200");
         config.addAllowedHeader("*");
+        config.addAllowedHeader("*");
+        config.addExposedHeader("*");
+        config.addAllowedMethod("*");
         config.addExposedHeader("Authorization");
         config.addAllowedMethod("OPTIONS");
         config.addAllowedMethod("GET");

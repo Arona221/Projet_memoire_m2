@@ -37,8 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         logger.debug("Traitement de la requête pour le chemin : {}", path);
 
         // Vérifier les deux formats possibles du chemin
-        if (path.startsWith("/uploads/") || path.startsWith("/api/ConnectEvent/uploads/")) {
+        if (path.startsWith("/ws") ||path.startsWith("/uploads/") || path.startsWith("/api/ConnectEvent/uploads/")||path.startsWith("/api/ConnectEvent/ws") ||
+                path.contains("/ws/info") || path.contains("/websocket") ||
+                path.contains("/ws/") && request.getQueryString() != null && request.getQueryString().contains("t=")) {
             logger.debug("Requête d'accès à une image détectée - contournement du filtre JWT");
+            logger.debug("Contournement du filtre JWT pour WebSocket/SockJS: {}", path);
             filterChain.doFilter(request, response);
             return;
         }

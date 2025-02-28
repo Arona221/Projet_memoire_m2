@@ -90,9 +90,13 @@ public class BilletAcheterService {
 
             List<BilletAcheter> billetsAchetes = new ArrayList<>();
             BigDecimal montantTotal = BigDecimal.ZERO;
+            int totalQuantity = 0;
+
+            // Map pour stocker les quantités et montants par type de ticket
+            Map<String, Integer> ticketsByType = new HashMap<>();
+            Map<String, BigDecimal> montantsByType = new HashMap<>();
 
             String referenceTransaction = "PD-" + UUID.randomUUID();
-            int totalQuantity = 0;
 
             for (BilletItemDTO item : billetDTO.getBillets()) {
                 if (item.getBilletId() == null) {
@@ -104,15 +108,18 @@ public class BilletAcheterService {
 
                 LOGGER.info("Billet sélectionné - ID: " + item.getBilletId() + ", Quantité: " + item.getQuantite());
 
-
                 if (billet.getQuantite() < item.getQuantite()) {
                     throw new RuntimeException("Stock insuffisant pour le billet: " + billet.getTypeBillet());
                 }
 
-
+                // Calcul du sous-total pour ce type de billet
                 BigDecimal sousTotal = billet.getPrix().multiply(BigDecimal.valueOf(item.getQuantite()));
                 totalQuantity += item.getQuantite(); // Ajouter la quantité
-                montantTotal = montantTotal.add(sousTotal);
+                montantTotal = montantTotal.add(sousTotal); // Ajouter au montant total
+
+                // Ajouter la quantité et le montant au type de ticket correspondant
+                ticketsByType.merge(billet.getTypeBillet(), item.getQuantite(), Integer::sum);
+                montantsByType.merge(billet.getTypeBillet(), sousTotal, BigDecimal::add);
 
                 BilletAcheter billetAcheter = new BilletAcheter();
                 billetAcheter.setQuantite(item.getQuantite());
@@ -124,8 +131,8 @@ public class BilletAcheterService {
                 billetAcheter.setReferenceTransaction(referenceTransaction);
 
                 billetsAchetes.add(billetAcheter);
-                montantTotal = montantTotal.add(sousTotal);
 
+                // Mettre à jour le stock
                 billet.setQuantite(billet.getQuantite() - item.getQuantite());
                 billetRepository.save(billet);
             }
@@ -137,21 +144,21 @@ public class BilletAcheterService {
 
             billetAcheterRepository.saveAll(billetsAchetes);
 
-            // Remplacer la partie Kafka
+            // Construction du message Kafka
             ObjectMapper mapper = new ObjectMapper();
             mapper.findAndRegisterModules(); // Important pour Java 8+
-
 
             Map<String, Object> kafkaMessage = new HashMap<>();
             kafkaMessage.put("eventId", evenement.getId_evenement());
             kafkaMessage.put("montantTotal", montantTotal.doubleValue());
             kafkaMessage.put("quantite", totalQuantity);
+            kafkaMessage.put("ticketsByType", ticketsByType); // Ajouter les tickets par type
+            kafkaMessage.put("montantsByType", montantsByType); // Ajouter les montants par type
 
             String message = mapper.writeValueAsString(kafkaMessage);
 
             LOGGER.info("Message Kafka validé : " + message); // Vérifier le format
             kafkaTemplate.send("ticket-purchases", message);
-
 
             return ResponseEntity.ok(new FactureResponse("success", "Facture générée avec succès", paymentUrl, referenceTransaction));
 
@@ -161,8 +168,6 @@ public class BilletAcheterService {
                     .body(new FactureResponse("error", e.getMessage(), null, null));
         }
     }
-
-
     public ResponseEntity<PaiementResponse> verifierPaiement(String referenceTransaction) {
         try {
             List<BilletAcheter> billets = billetAcheterRepository.findByReferenceTransaction(referenceTransaction);

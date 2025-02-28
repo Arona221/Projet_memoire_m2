@@ -14,4 +14,5 @@ public interface SalesMetricsRepository extends JpaRepository<SalesMetrics, Long
 
     @Query("SELECT sm FROM SalesMetrics sm WHERE sm.organisateurId = :organisateurId")
     List<SalesMetrics> findByOrganisateurId(@Param("organisateurId") Long organisateurId);
+
 }
