@@ -9,6 +9,8 @@ import connect.event.enums.Status;
 import connect.event.service.EvenementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -122,6 +124,23 @@ public class EvenementController {
     public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+
+    @GetMapping("/events")
+    public ResponseEntity<Page<EvenementDTO>> getApprovedEventMarting(
+            @RequestParam(required = false) String categorie,
+            @RequestParam(required = false) String lieu,
+            @RequestParam(required = false) String date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
+        Page<EvenementDTO> approvedEvents = evenementService.getApprovedEventMarting(categorie, lieu, date, pageable);
+
+        return ResponseEntity.ok(approvedEvents);
+    }
+
 
 
 

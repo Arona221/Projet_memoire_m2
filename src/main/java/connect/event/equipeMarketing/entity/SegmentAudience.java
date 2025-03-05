@@ -13,7 +13,7 @@ public class SegmentAudience {
     private Long idSegment;
 
     @ElementCollection
-    @CollectionTable(name = "segment_criteres", joinColumns = @JoinColumn(name = "idSegment"))
+    @CollectionTable(name = "segment_critere", joinColumns = @JoinColumn(name = "idSegment"))
     @Column(name = "critere")
     private List<String> criteres; // Ex: ["age > 25", "localisation = Paris", "interet = musique"]
 

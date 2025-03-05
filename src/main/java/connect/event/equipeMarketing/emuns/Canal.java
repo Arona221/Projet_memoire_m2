@@ -1,5 +1,5 @@
 package connect.event.equipeMarketing.emuns;
 
 public enum Canal {
-    Email, SMS, Publicite
+    EMAIL, SMS, PUBLICITE, FACEBOOK, GOOGLE,MAILCHIMP
 }

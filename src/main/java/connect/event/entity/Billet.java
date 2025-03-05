@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+import lombok.ToString;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@ToString(exclude = "evenement") // Exclure la référence à Evenement
 public class Billet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +27,6 @@ public class Billet {
 
     @ManyToOne
     @JoinColumn(name = "evenement_id", nullable = false)
-    @JsonIgnore // Empêche la sérialisation infinie
+    @JsonBackReference
     private Evenement evenement;
-
-
 }

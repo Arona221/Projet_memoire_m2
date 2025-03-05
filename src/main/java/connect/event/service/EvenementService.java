@@ -81,7 +81,7 @@ public class EvenementService {
 
         Evenement evenement = new Evenement();
         evenement.setNom(evenementDTO.getNom());
-        evenement.setDate(evenementDTO.getDate());
+        evenement.setDate((java.sql.Date) evenementDTO.getDate());
         evenement.setLieu(evenementDTO.getLieu());
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());
@@ -303,7 +303,7 @@ public class EvenementService {
 
         // Mise à jour des champs de base
         evenement.setNom(evenementDTO.getNom());
-        evenement.setDate(evenementDTO.getDate());
+        evenement.setDate((java.sql.Date) evenementDTO.getDate());
         evenement.setLieu(evenementDTO.getLieu());
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());
@@ -352,6 +352,26 @@ public class EvenementService {
         // Convertir les résultats en DTO
         return eventPage.map(this::convertToDTO);
     }
+
+    public Page<EvenementDTO> getApprovedEventMarting(String categorie, String lieu, String date, Pageable pageable) {
+        Specification<Evenement> spec = Specification.where((root, query, cb) ->
+                cb.equal(root.get("status"), Status.APPROUVE) // Filtrer par statut approuvé
+        );
+
+        if (categorie != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("categorie"), Categorie.valueOf(categorie)));
+        }
+        if (lieu != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("lieu"), lieu));
+        }
+        if (date != null) {
+            spec = spec.and((root, query, cb) -> cb.like(root.get("date").as(String.class), date + "%"));
+        }
+
+        return evenementRepository.findAll(spec, pageable)
+                .map(this::convertToDTO);
+    }
+
 
 
 }

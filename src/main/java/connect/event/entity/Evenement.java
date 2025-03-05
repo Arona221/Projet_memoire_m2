@@ -9,16 +9,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.sql.Date;
+
+
+import lombok.ToString;
 
 @Entity
 @Table(name = "Evenement")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"billets", "organisateur"}) // Exclure les champs problématiques
 public class Evenement {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_evenement;
@@ -26,8 +29,8 @@ public class Evenement {
 
     @Temporal(TemporalType.DATE)
     private Date date;
-    private String lieu;
     private String heure;
+    private String lieu;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -38,17 +41,12 @@ public class Evenement {
     @Enumerated(EnumType.STRING)
     private Status status = Status.EN_ATTENTE;
 
-    private String imagePath; // Ajoutez ce champ
-
-    @Column(name = "nombre_places", nullable = false)
+    private String imagePath;
     private int nombrePlaces;
-
-    public Evenement(Long id_evenement) {
-        this.id_evenement = id_evenement;
-    }
+    private String lienInscription;
 
     @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // Gère la sérialisation dans un seul sens
+    @JsonManagedReference
     private List<Billet> billets = new ArrayList<>();
 
     @ManyToOne

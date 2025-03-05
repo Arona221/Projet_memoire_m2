@@ -6,10 +6,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.ToString;
 
 @Entity
 @Data
 @Table(name = "utilisateur")
+@ToString(exclude = "evenements")
 public class Utilisateur {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
