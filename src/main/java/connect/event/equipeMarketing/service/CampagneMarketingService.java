@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class CampagneMarketingService {
+    private static final Logger log = LoggerFactory.getLogger( CampagneMarketingService.class);
 
     @Autowired
     private CampagneMarketingRepository campagneRepository;
@@ -30,6 +33,9 @@ public class CampagneMarketingService {
     private EmailServiceMailchimp emailServiceMailchimp;
 
     public CampagneMarketing creerCampagne(CampagneMarketing campagne) {
+        log.info("Création campagne - Données reçues: {}", campagne);
+        log.info("Message ID: {}", (campagne.getMessage() != null) ? campagne.getMessage().getIdMessage() : "null");
+        log.info("Segment ID: {}", (campagne.getSegment() != null) ? campagne.getSegment().getIdSegment() : "null");
         if (campagne.getEvenement() == null || campagne.getEvenement().getId_evenement() == null) {
             throw new IllegalArgumentException("L'événement ne peut pas être null");
         }

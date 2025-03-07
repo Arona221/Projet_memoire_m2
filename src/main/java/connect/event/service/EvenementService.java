@@ -81,7 +81,7 @@ public class EvenementService {
 
         Evenement evenement = new Evenement();
         evenement.setNom(evenementDTO.getNom());
-        evenement.setDate((java.sql.Date) evenementDTO.getDate());
+        evenement.setDate(evenementDTO.getDate());
         evenement.setLieu(evenementDTO.getLieu());
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());
@@ -89,6 +89,7 @@ public class EvenementService {
         evenement.setNombrePlaces(evenementDTO.getNombrePlaces());
         evenement.setOrganisateur(utilisateur);
         evenement.setHeure(evenementDTO.getHeure());
+
 
         // Gestion de l'image
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -147,7 +148,8 @@ public class EvenementService {
                 evenement.getImagePath(),
                 billetsDTO,
                 evenement.getId_evenement(),
-                evenement.getHeure()  // Incluez l'heure ici
+                evenement.getHeure()
+
         );
     }
 
@@ -303,7 +305,7 @@ public class EvenementService {
 
         // Mise à jour des champs de base
         evenement.setNom(evenementDTO.getNom());
-        evenement.setDate((java.sql.Date) evenementDTO.getDate());
+        evenement.setDate(evenementDTO.getDate());
         evenement.setLieu(evenementDTO.getLieu());
         evenement.setDescription(evenementDTO.getDescription());
         evenement.setCategorie(evenementDTO.getCategorie());

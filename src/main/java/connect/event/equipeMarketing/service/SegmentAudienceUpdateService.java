@@ -4,6 +4,7 @@ import connect.event.equipeMarketing.entity.Contact;
 import connect.event.equipeMarketing.entity.SegmentAudienceUpdate;
 import connect.event.equipeMarketing.repository.ContactRepository;
 import connect.event.equipeMarketing.repository.SegmentAudienceUpdateRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,15 +25,17 @@ public class SegmentAudienceUpdateService {
      * @param segment Le segment à créer.
      * @return Le segment créé.
      */
+    // SegmentAudienceUpdateService.java
+    @Transactional
     public SegmentAudienceUpdate creerSegment(SegmentAudienceUpdate segment) {
-        // Sauvegarder le segment
+        // Sauvegarder le segment sans les contacts
         SegmentAudienceUpdate savedSegment = segmentRepository.save(segment);
 
-        // Associer les contacts au segment
-        for (Contact contact : savedSegment.getContacts()) {
+        // Associer et sauvegarder chaque contact
+        savedSegment.getContacts().forEach(contact -> {
             contact.setSegment(savedSegment);
             contactRepository.save(contact);
-        }
+        });
 
         return savedSegment;
     }

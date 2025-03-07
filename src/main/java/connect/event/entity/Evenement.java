@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.Date;
@@ -24,11 +25,12 @@ import lombok.ToString;
 public class Evenement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_evenement")
     private Long id_evenement;
     private String nom;
 
-    @Temporal(TemporalType.DATE)
-    private Date date;
+    @Column(name = "date")
+    private LocalDateTime date;
     private String heure;
     private String lieu;
 
@@ -43,7 +45,7 @@ public class Evenement {
 
     private String imagePath;
     private int nombrePlaces;
-    private String lienInscription;
+
 
     @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -52,4 +54,6 @@ public class Evenement {
     @ManyToOne
     @JoinColumn(name = "idOrganisateur", nullable = false)
     private Utilisateur organisateur;
+
+
 }

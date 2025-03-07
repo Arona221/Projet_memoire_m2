@@ -1,5 +1,6 @@
 package connect.event.equipeMarketing.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "segments_audienceUpdate")
 public class SegmentAudienceUpdate {
 
@@ -28,7 +30,6 @@ public class SegmentAudienceUpdate {
     @Column(name = "critere")
     private List<String> criteres; // Ex: ["age > 25", "localisation = Paris"]
 
-    // Relation bidirectionnelle avec Contact
     @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonManagedReference
     private List<Contact> contacts;

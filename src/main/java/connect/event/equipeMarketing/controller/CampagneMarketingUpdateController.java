@@ -13,14 +13,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping(value = "/campagnes", produces = "application/json")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class CampagneMarketingUpdateController {
     @Autowired
     private CampagneMarketingServiceUpdate campagneService;
 
     @PostMapping
-    public ResponseEntity<CampagneMarketingUpdate> creerCampagne(@RequestBody CampagneMarketingUpdate campagne) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(campagneService.creerCampagne(campagne));
+    public ResponseEntity<?> creerCampagne(@RequestBody CampagneMarketingUpdate campagne) {
+        if (campagne.getMessage() == null || campagne.getSegment() == null) {
+            return ResponseEntity.badRequest().body("Message et segment doivent être fournis.");
+        }
+        return ResponseEntity.ok(campagneService.creerCampagne(campagne));
     }
 
 

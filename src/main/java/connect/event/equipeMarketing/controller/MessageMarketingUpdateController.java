@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/messages/update") // Changer le chemin ici
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
 public class MessageMarketingUpdateController {
 
     @Autowired

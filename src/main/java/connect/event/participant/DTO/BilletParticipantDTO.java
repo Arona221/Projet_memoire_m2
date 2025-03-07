@@ -2,6 +2,7 @@ package connect.event.participant.DTO;
 
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -9,7 +10,7 @@ public class BilletParticipantDTO {
     private Long id;
     private String eventNom;
     private String eventLieu;
-    private Date eventDate;
+    private LocalDateTime eventDate;
     private String heure;
     private String typeBillet;
     private int quantite;

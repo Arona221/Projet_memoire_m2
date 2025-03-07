@@ -33,6 +33,8 @@ import java.util.List;
 public class EvenementController {
     @Autowired
     private EvenementService evenementService;
+    @Autowired  // Injecte l'ObjectMapper configuré par Spring
+    private ObjectMapper objectMapper;
 
     @Qualifier("adminEmailService")  // Spécifie le bean à injecter
     private EmailService emailService;
@@ -61,13 +63,10 @@ public class EvenementController {
             @RequestPart("evenement") String evenementJson,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException {
 
-        // Convertir la chaîne JSON en objet EvenementDTO
-        ObjectMapper objectMapper = new ObjectMapper();
+        // Utilise l'ObjectMapper injecté au lieu de new ObjectMapper()
         EvenementDTO evenementDTO = objectMapper.readValue(evenementJson, EvenementDTO.class);
 
-        // Appeler le service pour créer l'événement
         Evenement newEvenement = evenementService.createEvenement(evenementDTO, idUtilisateur, imageFile);
-
         return ResponseEntity.ok(newEvenement);
     }
 

@@ -36,6 +36,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
@@ -240,14 +242,13 @@ public class BilletAcheterService {
             return "ANNULÉ";
         }
 
-        Date now = new Date();
-        if (billet.getEvenement().getDate().before(now)) {
+        LocalDateTime now = LocalDateTime.now(); // Obtenir la date et l'heure actuelles
+        if (billet.getEvenement().getDate().isBefore(now)) { // Utiliser isBefore()
             return "PASSÉ";
         }
 
         return billet.getStatutPaiement();
     }
-
     @Transactional
     public ResponseEntity<?> annulerBillet(Long billetId, Long participantId) {
         try {
@@ -259,7 +260,8 @@ public class BilletAcheterService {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès non autorisé");
             }
 
-            if (billet.getEvenement().getDate().before(new Date())) {
+            LocalDateTime now = LocalDateTime.now(); // Utiliser LocalDateTime
+            if (billet.getEvenement().getDate().isBefore(now)) { // Utiliser isBefore()
                 return ResponseEntity.badRequest().body("Impossible d'annuler un événement passé");
             }
 
@@ -293,13 +295,14 @@ public class BilletAcheterService {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
-
     public byte[] generateTicketPdf(BilletParticipantDTO dto) throws Exception {
+        LOGGER.info("Début de la génération du PDF pour le billet : " + dto.getReferenceTransaction());
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(new PDRectangle(400, 600)); // Format de ticket plus petit et plus pratique
             document.addPage(page);
 
             try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                LOGGER.info("Création du contenu du PDF...");
                 // Définition des couleurs
                 Color primaryColor = new Color(0, 102, 204);    // Bleu primaire
                 Color accentColor = new Color(255, 69, 0);      // Orange accent
@@ -381,11 +384,28 @@ public class BilletAcheterService {
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             document.save(byteArrayOutputStream);
+            LOGGER.info("PDF généré avec succès pour le billet : " + dto.getReferenceTransaction());
             return byteArrayOutputStream.toByteArray();
+        }catch (Exception e) {
+            LOGGER.severe("Erreur lors de la génération du PDF : " + e.getMessage());
+            throw e; // Propager l'exception pour le débogage
         }
     }
 
-    private void drawEventSection(PDPageContentStream contentStream, BilletParticipantDTO dto, Color textColor, Color accentColor) throws IOException, ParseException {
+    private void drawEventSection(PDPageContentStream contentStream, BilletParticipantDTO dto, Color textColor, Color accentColor) throws IOException {
+        // Vérifications de nullité
+        if (dto.getEventDate() == null) {
+            throw new IllegalArgumentException("eventDate ne peut pas être null");
+        }
+        if (dto.getHeure() == null || dto.getHeure().isEmpty()) {
+            throw new IllegalArgumentException("heure ne peut pas être null ou vide");
+        }
+
+        // Formatter pour LocalDateTime
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.FRENCH);
+        String dateStr = dto.getEventDate().format(dateFormatter);
+        String timeStr = "à " + dto.getHeure();
+
         // En-tête de section
         contentStream.setFont(PDType1Font.HELVETICA_BOLD, 14);
         contentStream.setNonStrokingColor(accentColor);
@@ -407,10 +427,6 @@ public class BilletAcheterService {
         contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
         contentStream.beginText();
         contentStream.newLineAtOffset(80, 435);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH);
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH'h'mm", Locale.FRENCH);
-        String dateStr = dateFormat.format(dto.getEventDate());
-        String timeStr = "à " + (dto.getHeure() != null ? timeFormat.format(new SimpleDateFormat("HH:mm").parse(dto.getHeure())) : "");
         contentStream.showText(dateStr + " " + timeStr);
         contentStream.endText();
 
@@ -440,7 +456,6 @@ public class BilletAcheterService {
         contentStream.showText(dto.getTypeBillet());
         contentStream.endText();
     }
-
     private void drawParticipantSection(PDPageContentStream contentStream, BilletParticipantDTO dto, Color textColor, Color accentColor) throws IOException {
         // En-tête de section
         contentStream.setFont(PDType1Font.HELVETICA_BOLD, 14);

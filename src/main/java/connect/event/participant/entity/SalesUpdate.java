@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -15,7 +16,7 @@ import java.util.Date;
 public class SalesUpdate {
     private Long eventId;
     private String eventName;
-    private Date eventDate;
+    private LocalDateTime eventDate;
     private int quantity;
     private BigDecimal amount;
     private Date timestamp;

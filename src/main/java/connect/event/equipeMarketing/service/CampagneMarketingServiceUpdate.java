@@ -20,10 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class CampagneMarketingServiceUpdate {
     private static final Logger logger = LoggerFactory.getLogger(CampagneMarketingServiceUpdate.class);
+    private static final Logger log = LoggerFactory.getLogger( CampagneMarketingServiceUpdate.class);
 
     @Autowired
     private CampagneMarketingUpadateRepository campagneRepository;
@@ -47,6 +50,7 @@ public class CampagneMarketingServiceUpdate {
     @Autowired
     private MessageMarketingUpdateService messageService;
 
+
     /**
      * Crée une nouvelle campagne marketing.
      *
@@ -56,6 +60,9 @@ public class CampagneMarketingServiceUpdate {
      */
     @Transactional
     public CampagneMarketingUpdate creerCampagne(CampagneMarketingUpdate campagne) {
+        log.info("Création campagne - Données reçues: {}", campagne);
+        log.info("Message ID: {}", (campagne.getMessage() != null) ? campagne.getMessage().getIdMessage() : "null");
+        log.info("Segment ID: {}", (campagne.getSegment() != null) ? campagne.getSegment().getIdSegment() : "null");
         // Validation des champs obligatoires
         if (campagne.getMessage() == null || campagne.getSegment() == null || campagne.getEvenement() == null) {
             throw new IllegalArgumentException("La campagne doit avoir un message, un segment et un événement");
@@ -71,6 +78,9 @@ public class CampagneMarketingServiceUpdate {
         }
         if (campagne.getDateDebut().isAfter(campagne.getDateFin())) {
             throw new IllegalArgumentException("La date de début doit être avant la date de fin");
+        }
+        if (campagne.getSegment() == null || campagne.getSegment().getIdSegment() == null) {
+            throw new IllegalArgumentException("L'ID du segment est requis");
         }
 
         // Charger l'événement, le message et le segment

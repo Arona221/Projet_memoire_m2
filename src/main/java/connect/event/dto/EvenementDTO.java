@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class EvenementDTO {
     @Size(min = 1, max = 100, message = "Le nom de l'événement doit comporter entre 1 et 100 caractères.")
     private String nom;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private Date date;
+    private LocalDateTime date;
     private String description;
     private String lieu;
     private Categorie categorie;
@@ -33,4 +34,5 @@ public class EvenementDTO {
     private List<BilletDTO> billets;
     private Long id_evenement;
     private String heure;
+
 }

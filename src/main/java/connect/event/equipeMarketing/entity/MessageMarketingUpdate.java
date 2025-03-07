@@ -1,5 +1,6 @@
 package connect.event.equipeMarketing.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import connect.event.equipeMarketing.emuns.Canal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class MessageMarketingUpdate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_message")
     private Long idMessage;
 
     private String sujet; // Sujet de l'e-mail
@@ -23,4 +25,7 @@ public class MessageMarketingUpdate {
 
     @Enumerated(EnumType.STRING)
     private Canal canal;
+    @OneToOne(mappedBy = "message")
+    @JsonBackReference // Évite la sérialisation de cette relation
+    private CampagneMarketingUpdate campagne;
 }
