@@ -22,8 +22,9 @@ public class Contact {
     private String nom;
 
     // Relation bidirectionnelle avec SegmentAudienceUpdate
+
     @ManyToOne
     @JoinColumn(name = "segment_id")
-    @JsonBackReference
+    @JsonBackReference // ◄▲ Gère la désérialisation côté enfant
     private SegmentAudienceUpdate segment;
 }

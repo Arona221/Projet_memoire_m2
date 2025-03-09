@@ -19,9 +19,20 @@ public class NotificationController {
     @Autowired
     private NotificationServiceWhatsApp notificationServiceWhatsApp;
 
+    // NotificationController.java
+
     @PostMapping("/email")
-    public void envoyerNotification(@RequestParam Long organisateurId, @RequestParam Long evenementId,
-                                    @RequestBody NotificationDTO notificationDTO) throws MessagingException {
+    public void envoyerNotification(
+            @RequestParam Long organisateurId,
+            @RequestParam Long evenementId,
+            @RequestBody NotificationDTO notificationDTO) throws MessagingException {
+
+        System.out.println("=== REÇU DU FRONTEND ===");
+        System.out.println("Organisateur ID: " + organisateurId);
+        System.out.println("Événement ID: " + evenementId);
+        System.out.println("Contenu: " + notificationDTO.getContenu());
+        System.out.println("Type: " + notificationDTO.getTypeNotification());
+
         notificationService.envoyerNotification(organisateurId, evenementId, notificationDTO);
     }
     @PostMapping("/sms")

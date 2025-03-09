@@ -52,6 +52,7 @@ public interface EvenementRepository extends JpaRepository <Evenement, Long>,Jpa
             String nom,
             Pageable pageable
     );
+    List<Evenement> findByOrganisateur_IdUtilisateur(Long organisateurId);
 
 
 

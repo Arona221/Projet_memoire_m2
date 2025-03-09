@@ -1,15 +1,13 @@
 package connect.event.participant.controller;
 
-import connect.event.participant.DTO.BilletParticipantDTO;
-import connect.event.participant.DTO.BilletSelectionDTO;
-import connect.event.participant.DTO.FactureResponse;
-import connect.event.participant.DTO.PaiementResponse;
+import connect.event.participant.DTO.*;
 import connect.event.participant.service.BilletAcheterService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,5 +62,20 @@ public class BilletController {
             return ResponseEntity.internalServerError()
                     .body(("Erreur génération PDF: " + e.getMessage()).getBytes());
         }
+    }
+
+    // BilletController.java
+    @PreAuthorize("hasRole('ORGANISATEUR')")
+    @GetMapping("/organizer/{organizerId}/events")
+    public ResponseEntity<List<EventParticipantsDTO>> getOrganizerEventsWithParticipants(
+            @PathVariable Long organizerId) { // Retirer le paramètre token
+        return billetAcheterService.getOrganizerEventsWithParticipants(organizerId);
+    }
+
+    @PreAuthorize("hasRole('ORGANISATEUR')")
+    @GetMapping("/event/{eventId}/participants")
+    public ResponseEntity<List<ParticipantDetailsDTO>> getEventParticipants(
+            @PathVariable Long eventId) { // Retirer le paramètre token
+        return billetAcheterService.getEventParticipants(eventId);
     }
 }

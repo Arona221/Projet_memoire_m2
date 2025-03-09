@@ -53,6 +53,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/ConnectEvent/evenements").hasAnyRole("ORGANISATEUR", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/ConnectEvent/evenements/**").hasAnyRole("ORGANISATEUR", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/ConnectEvent/evenements/**").hasAnyRole("ORGANISATEUR", "ADMIN")
+                        // Routes organisateur
+                        .requestMatchers("/api/ConnectEvent/billets/organizer/*/events").hasRole("ORGANISATEUR")
+                        .requestMatchers("/api/ConnectEvent/billets/event/*/participants").hasRole("ORGANISATEUR")
                         // Par défaut, exiger l'authentification pour les autres requêtes
                         .anyRequest().authenticated()
                 )

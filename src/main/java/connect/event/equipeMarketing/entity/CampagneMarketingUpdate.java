@@ -18,6 +18,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "campagnes_marketingUpdate")
 @ToString(exclude = {"evenement", "message", "segment"}) // Exclure les champs problématiques
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")

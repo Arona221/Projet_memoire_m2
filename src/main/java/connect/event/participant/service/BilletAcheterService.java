@@ -22,8 +22,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+// Ajouter cet import en haut du fichier de service
+import org.springframework.security.core.Authentication;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -636,4 +639,83 @@ public class BilletAcheterService {
         return "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data="
                 + URLEncoder.encode(reference, StandardCharsets.UTF_8);
     }
+
+    // BilletAcheterService.java
+    public ResponseEntity<List<EventParticipantsDTO>> getOrganizerEventsWithParticipants(Long organizerId) {
+        // Récupération de l'utilisateur authentifié
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        // Vérification des droits
+        Utilisateur organizer = utilisateurRepository.findByEmail(username)
+                .orElseThrow(() -> new AccessDeniedException("Utilisateur non trouvé"));
+
+        if (!organizer.getIdUtilisateur().equals(organizerId)) {
+            throw new AccessDeniedException("Accès non autorisé");
+        }
+
+        List<Evenement> events = evenementRepository.findByOrganisateur_IdUtilisateur(organizerId);
+
+        // BilletAcheterService.java
+        List<EventParticipantsDTO> result = events.stream().map(event -> {
+            EventParticipantsDTO dto = new EventParticipantsDTO();
+            dto.setEventId(event.getId_evenement());
+            dto.setEventName(event.getNom());
+            dto.setEventDate(event.getDate());
+
+            Map<String, Object> stats = billetAcheterRepository.getEventStats(event.getId_evenement());
+
+            // Récupération avec valeurs par défaut
+            Long participantCount = (stats.get("participantCount") != null)
+                    ? ((Number) stats.get("participantCount")).longValue()
+                    : 0L;
+
+            Long totalTickets = (stats.get("totalTickets") != null)
+                    ? ((Number) stats.get("totalTickets")).longValue()
+                    : 0L;
+
+            dto.setParticipantCount(participantCount);
+            dto.setTotalTicketsSold(totalTickets);
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    public ResponseEntity<List<ParticipantDetailsDTO>> getEventParticipants(Long eventId) {
+        // Vérification de l'accès à l'événement
+        org.springframework.security.core.Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        Evenement event = evenementRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Événement non trouvé"));
+
+        if (!event.getOrganisateur().getEmail().equals(username)) {
+            throw new AccessDeniedException("Accès non autorisé à cet événement");
+        }
+
+        List<BilletAcheter> billets = billetAcheterRepository.findByEvenement_Id_evenement(eventId);
+
+        Map<Long, ParticipantDetailsDTO> participantsMap = new LinkedHashMap<>();
+
+        billets.forEach(billet -> {
+            Long participantId = billet.getParticipant().getIdUtilisateur();
+            ParticipantDetailsDTO participant = participantsMap.computeIfAbsent(participantId, id -> {
+                ParticipantDetailsDTO dto = new ParticipantDetailsDTO();
+                dto.setPrenom(billet.getParticipant().getPrenom());
+                dto.setNom(billet.getParticipant().getNom());
+                dto.setEmail(billet.getParticipant().getEmail());
+                dto.setTickets(new HashMap<>());
+                return dto;
+            });
+
+            String ticketType = billet.getBillet().getTypeBillet();
+            participant.getTickets().merge(ticketType, billet.getQuantite(), Integer::sum);
+        });
+
+        return ResponseEntity.ok(new ArrayList<>(participantsMap.values()));
+    }
+
+
 }
