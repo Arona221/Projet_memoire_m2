@@ -19,7 +19,9 @@ public class Notificationpart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 1000)
     private String message;
+
     private LocalDateTime dateEnvoi;
     private boolean deleted = false;
 

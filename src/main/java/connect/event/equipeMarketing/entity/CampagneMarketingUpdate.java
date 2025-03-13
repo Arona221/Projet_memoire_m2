@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import connect.event.entity.Evenement;
+import connect.event.entity.Utilisateur;
 import connect.event.equipeMarketing.emuns.StatutCampagne;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 import lombok.ToString;
 
 @Entity
@@ -31,8 +34,18 @@ public class CampagneMarketingUpdate {
     private LocalDate dateDebut;
     private LocalDate dateFin;
     private String expediteurEmail;
+    @Column(name = "date_publication_planifiee")
+    private LocalDate datePublicationPlanifiee;
+
+    @Column(name = "heure_publication_planifiee")
+    private LocalTime heurePublicationPlanifiee;
+    @ManyToOne
+    @JoinColumn(name = "idUtilisateur", referencedColumnName = "idUtilisateur")
+    private Utilisateur organisateur;
+
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "statut", length = 50)
     private StatutCampagne statut;
 
     @ManyToOne

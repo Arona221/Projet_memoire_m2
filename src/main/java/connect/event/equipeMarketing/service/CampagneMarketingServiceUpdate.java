@@ -13,12 +13,17 @@ import connect.event.equipeMarketing.repository.MessageMarketingUpdateRepository
 import connect.event.equipeMarketing.repository.SegmentAudienceUpdateRepository;
 import connect.event.exception.CampagneNotFoundException;
 import connect.event.repository.EvenementRepository;
+import connect.event.service.NotificationpartService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +54,9 @@ public class CampagneMarketingServiceUpdate {
     private SegmentAudienceUpdateRepository segmentRepository; // Ajoutez ce repository
     @Autowired
     private MessageMarketingUpdateService messageService;
+    @Autowired
+    private NotificationpartService notificationpartService;
+
 
 
     /**
@@ -178,11 +186,27 @@ public class CampagneMarketingServiceUpdate {
             campagne.setStatut(StatutCampagne.En_cours);
             campagneRepository.save(campagne);
             logger.info("Campagne publiée avec succès");
+
+            // Notification personnalisée
+            String messageNotification = String.format(
+                    "Bonjour %s %s, nous avons le plaisir de vous informer que votre événement %s a été promu avec succès par l'équipe marketing. Nous vous remercions pour votre confiance et vous souhaitons une excellente réussite pour votre événement.",
+                    campagne.getEvenement().getOrganisateur().getPrenom(),
+                    campagne.getEvenement().getOrganisateur().getNom(),
+                    campagne.getEvenement().getNom()
+            );
+
+            // Sauvegarder la notification dans la base de données
+            notificationpartService.creerNotification(
+                    campagne.getEvenement().getOrganisateur().getIdUtilisateur(),
+                    messageNotification
+            );
+
         } catch (Exception e) {
             logger.error("Erreur lors de la publication de la campagne", e);
             throw new RuntimeException("Erreur lors de la publication de la campagne: " + e.getMessage(), e);
         }
     }
+
     /**
      * Récupère toutes les campagnes marketing.
      *
@@ -215,5 +239,97 @@ public class CampagneMarketingServiceUpdate {
         CampagneMarketingUpdate campagne = getCampagneById(id);
         campagne.setStatut(StatutCampagne.Terminee);
         campagneRepository.save(campagne);
+    }
+
+    /**
+     * Récupère les campagnes qui doivent être publiées.
+     * Seules les campagnes dont la date et l'heure de publication sont passées seront sélectionnées.
+     */
+    public List<CampagneMarketingUpdate> getCampagnesAPublier() {
+        LocalDateTime maintenant = LocalDateTime.now();
+        return campagneRepository.findCampagnesAPublier(
+                maintenant.toLocalDate(),
+                maintenant.toLocalTime(),
+                StatutCampagne.Programmer // ✅ Utilisation du bon statut
+        );
+    }
+
+    /**
+     * Planifie une campagne pour une publication automatique.
+     */
+    @Transactional
+    public void planifierPublication(Long idCampagne, LocalDate date, LocalTime heure) {
+        CampagneMarketingUpdate campagne = getCampagneById(idCampagne);
+        if (LocalDateTime.now().isAfter(LocalDateTime.of(date, heure))) {
+            throw new IllegalArgumentException("La date de publication doit être dans le futur");
+        }
+
+        // Enregistrer la date et l'heure de publication
+        campagne.setDatePublicationPlanifiee(date);
+        campagne.setHeurePublicationPlanifiee(heure);
+        campagne.setStatut(StatutCampagne.Programmer);
+
+        campagneRepository.save(campagne);
+
+
+    }
+
+
+
+
+    /**
+     * Récupère les campagnes qui sont planifiées pour une publication future.
+     */
+    public List<CampagneMarketingUpdate> getCampagnesPlanifiees() {
+        return campagneRepository.findByStatut(StatutCampagne.Programmer);
+    }
+
+    public CampagneMarketingUpdate save(CampagneMarketingUpdate campagne) {
+        return campagneRepository.save(campagne);
+    }
+
+
+    public void verifierEtPublierCampagnes() {
+        LocalDateTime maintenant = LocalDateTime.now();
+
+        // Récupérer toutes les campagnes planifiées dont l'heure de publication est passée
+        List<CampagneMarketingUpdate> campagnesPlanifiees = campagneRepository.findCampagnesAPublier(
+                maintenant.toLocalDate(),
+                maintenant.toLocalTime(),
+                StatutCampagne.Programmer // Campagnes programmées
+        );
+
+        // Parcourir chaque campagne pour la publier automatiquement
+        for (CampagneMarketingUpdate campagne : campagnesPlanifiees) {
+            try {
+                publierCampagne(campagne.getId()); // Appel de la méthode de publication
+
+                // Mettre à jour le statut de la campagne en "En_cours"
+                campagne.setStatut(StatutCampagne.En_cours);
+                campagneRepository.save(campagne);
+
+                // Notification personnalisée
+                String messageNotification = String.format(
+                        "Bonjour %s %s, nous avons le plaisir de vous informer que votre événement %s a été promu avec succès par l'équipe marketing. Nous vous remercions pour votre confiance et vous souhaitons une excellente réussite pour votre événement.",
+                        campagne.getEvenement().getOrganisateur().getPrenom(),
+                        campagne.getEvenement().getOrganisateur().getNom(),
+                        campagne.getEvenement().getNom()
+                );
+
+                // Sauvegarder la notification dans la base de données
+                notificationpartService.creerNotification(
+                        campagne.getEvenement().getOrganisateur().getIdUtilisateur(),
+                        messageNotification
+                );
+            } catch (Exception e) {
+                logger.error("Erreur lors de la publication automatique de la campagne", e);
+            }
+        }
+    }
+
+
+    public List<CampagneMarketingUpdate> getCampagnesByStatut(StatutCampagne statutCampagne) {
+        log.info("Récupération des campagnes avec le statut: {}", statutCampagne);
+        return campagneRepository.findByStatut(statutCampagne);
     }
 }

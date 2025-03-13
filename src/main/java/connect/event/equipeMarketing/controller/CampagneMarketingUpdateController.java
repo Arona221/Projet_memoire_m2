@@ -1,5 +1,7 @@
 package connect.event.equipeMarketing.controller;
 
+import connect.event.equipeMarketing.DTO.PlanificationRequest;
+import connect.event.equipeMarketing.emuns.StatutCampagne;
 import connect.event.equipeMarketing.entity.CampagneMarketingUpdate;
 import connect.event.equipeMarketing.service.CampagneMarketingServiceUpdate;
 import connect.event.exception.CampagneNotFoundException;
@@ -62,5 +64,40 @@ public class CampagneMarketingUpdateController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la terminaison de la campagne: " + e.getMessage());
         }
+    }
+
+    /**
+     * Planifier une campagne avec une date et heure de publication.
+     */
+    @PostMapping("/{id}/planifier")
+    public ResponseEntity<String> planifierCampagne(
+            @PathVariable Long id,
+            @RequestBody PlanificationRequest request
+    ) {
+        campagneService.planifierPublication(id, request.getDate(), request.getHeure());
+        return ResponseEntity.ok("✅ Campagne planifiée avec succès pour le " + request.getDate() + " à " + request.getHeure());
+    }
+
+    /**
+     * Récupérer toutes les campagnes planifiées pour une publication future.
+     */
+    @GetMapping("/planifiees")
+    public ResponseEntity<List<CampagneMarketingUpdate>> getCampagnesPlanifiees() {
+        return ResponseEntity.ok(campagneService.getCampagnesPlanifiees());
+    }
+
+
+    @GetMapping("/statut/{statut}")
+    public ResponseEntity<List<CampagneMarketingUpdate>> getCampagnesByStatut(
+            @PathVariable String statut) {
+
+        StatutCampagne statutCampagne;
+        try {
+            statutCampagne = StatutCampagne.valueOf(statut);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(campagneService.getCampagnesByStatut(statutCampagne));
     }
 }

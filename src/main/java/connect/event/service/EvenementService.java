@@ -44,7 +44,7 @@ public class EvenementService {
     @Autowired
     private EmailService emailService;
 
-    private static final Logger logger = LoggerFactory.getLogger(EvenementService.class);
+    public static final Logger logger = LoggerFactory.getLogger(EvenementService.class);
 
     private static final String UPLOAD_DIR = "uploads"; // Chemin relatif au projet
 
