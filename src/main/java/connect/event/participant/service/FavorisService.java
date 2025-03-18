@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class FavorisService {
@@ -53,5 +55,9 @@ public class FavorisService {
     public Page<Evenement> getFavorisUtilisateur(Long utilisateurId, Pageable pageable) {
         return favorisRepository.findByUtilisateurIdUtilisateur(utilisateurId, pageable)
                 .map(Favoris::getEvenement);
+    }
+
+    public List<Utilisateur> getUsersByFavoriteEvent(Long idEvenement) {
+        return favorisRepository.getUsersByFavoriteEvent(idEvenement);
     }
 }

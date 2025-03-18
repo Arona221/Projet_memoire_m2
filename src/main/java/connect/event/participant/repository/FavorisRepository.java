@@ -1,12 +1,16 @@
 package connect.event.participant.repository;
 
+import connect.event.entity.Utilisateur;
 import connect.event.participant.entity.Favoris;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface FavorisRepository extends JpaRepository<Favoris, Long> {
 
@@ -20,4 +24,7 @@ public interface FavorisRepository extends JpaRepository<Favoris, Long> {
     void deleteByUtilisateurIdAndEvenementId(Long utilisateurId, Long evenementId);
 
     Page<Favoris> findByUtilisateurIdUtilisateur(Long utilisateurId, Pageable pageable);
+
+    @Query("SELECT f.utilisateur FROM Favoris f WHERE f.evenement.id_evenement = :eventId")
+    List<Utilisateur> getUsersByFavoriteEvent(@Param("eventId") Long eventId);
 }

@@ -4,9 +4,12 @@ import connect.event.organisateur.DTO.NotificationDTO;
 import connect.event.organisateur.service.NotificationService;
 import connect.event.organisateur.service.NotificationServiceSms;
 import connect.event.organisateur.service.NotificationServiceWhatsApp;
+import connect.event.participant.entity.SendNotification;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/notification")
@@ -53,6 +56,16 @@ public class NotificationController {
 
         notificationServiceWhatsApp.envoyerNotificationWhatsApp(organisateurId, evenementId, notificationDTO);
         return "📩 Notification WhatsApp envoyée à tous les participants de l'événement " + evenementId;
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<SendNotification> getUserNotifications(@PathVariable Long userId) {
+        return notificationService.getUnreadNotifications(userId);
+    }
+
+    @PostMapping("/mark-read/{id}")
+    public void markNotificationAsRead(@PathVariable Long id) {
+        notificationService.markAsRead(id);
     }
 
 

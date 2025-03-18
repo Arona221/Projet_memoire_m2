@@ -25,6 +25,16 @@ public class EmailServiceImpl implements EmailService {
         message.setText("Votre code de validation est : " + code);
         javaMailSender.send(message);
     }
+
+    @Override
+    public void envoyerResetPasswordEmail(String to, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(to);
+        message.setSubject("Réinitialisation de mot de passe");
+        message.setText("Votre code de réinitialisation est : " + code + "\nCe code expire dans 1 heure.");
+        javaMailSender.send(message);
+    }
     @Override
     public void envoyerNotificationStatut(String to, String prenom, String nom, String nomEvenement, String statut) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -36,5 +46,7 @@ public class EmailServiceImpl implements EmailService {
                 + "Cordialement,\nL'équipe de ConnectEvent.");
 
         javaMailSender.send(message);
+
+
     }
 }

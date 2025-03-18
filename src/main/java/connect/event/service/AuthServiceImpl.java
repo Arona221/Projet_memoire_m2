@@ -1,9 +1,6 @@
 package connect.event.service;
 
-import connect.event.dto.ConnexionDTO;
-import connect.event.dto.InscriptionDTO;
-import connect.event.dto.TokenDTO;
-import connect.event.dto.ValidationCompteDTO;
+import connect.event.dto.*;
 import connect.event.entity.Utilisateur;
 import connect.event.exception.*;
 import connect.event.repository.UtilisateurRepository;
@@ -16,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -126,5 +124,41 @@ public class AuthServiceImpl implements AuthService {
      */
     private String genererCode() {
         return String.format("%06d", new Random().nextInt(999999));
+    }
+
+    @Override
+    public void initiatePasswordReset(ForgotPasswordDTO dto) {
+        Optional<Utilisateur> userOptional = utilisateurRepository.findByEmail(dto.getEmail());
+        if (userOptional.isEmpty()) {
+            return; // Ne pas révéler que l'email n'existe pas
+        }
+        Utilisateur user = userOptional.get();
+        String code = genererCode();
+        user.setResetPasswordCode(code);
+        user.setResetPasswordCodeExpiration(LocalDateTime.now().plusHours(1));
+        utilisateurRepository.save(user);
+        emailService.envoyerResetPasswordEmail(user.getEmail(), code);
+    }
+    @Override
+    public void resetPassword(ResetPasswordDTO dto) {
+        Utilisateur user = utilisateurRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new UtilisateurNonTrouveException("Utilisateur non trouvé"));
+
+        if (user.getResetPasswordCode() == null || user.getResetPasswordCodeExpiration() == null) {
+            throw new CodeValidationInvalideException("Aucun code de réinitialisation trouvé");
+        }
+
+        if (user.getResetPasswordCodeExpiration().isBefore(LocalDateTime.now())) {
+            throw new CodeValidationExpireException("Le code de réinitialisation a expiré");
+        }
+
+        if (!user.getResetPasswordCode().equals(dto.getCode())) {
+            throw new CodeValidationInvalideException("Code de réinitialisation invalide");
+        }
+
+        user.setMotDePasse(passwordEncoder.encode(dto.getNewPassword()));
+        user.setResetPasswordCode(null);
+        user.setResetPasswordCodeExpiration(null);
+        utilisateurRepository.save(user);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -53,6 +54,8 @@ public interface EvenementRepository extends JpaRepository <Evenement, Long>,Jpa
             Pageable pageable
     );
     List<Evenement> findByOrganisateur_IdUtilisateur(Long organisateurId);
+    // Ajouter cette méthode
+    List<Evenement> findByDateBetween(LocalDateTime start, LocalDateTime end);
 
 
 

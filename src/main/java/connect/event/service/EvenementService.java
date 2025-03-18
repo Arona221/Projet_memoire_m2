@@ -355,7 +355,7 @@ public class EvenementService {
         return eventPage.map(this::convertToDTO);
     }
 
-    public Page<EvenementDTO> getApprovedEventMarting(String categorie, String lieu, String date, Pageable pageable) {
+    public Page<EvenementDTO> getApprovedEventMarting(String categorie, String lieu, String date, Pageable pageable, boolean showFutureOnly) {
         Specification<Evenement> spec = Specification.where((root, query, cb) ->
                 cb.equal(root.get("status"), Status.APPROUVE) // Filtrer par statut approuvé
         );
@@ -370,10 +370,15 @@ public class EvenementService {
             spec = spec.and((root, query, cb) -> cb.like(root.get("date").as(String.class), date + "%"));
         }
 
+        // Filtrer uniquement les événements futurs ou d'aujourd'hui
+        if (showFutureOnly) {
+            LocalDate today = LocalDate.now();
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("date").as(LocalDate.class), today));
+        }
+
         return evenementRepository.findAll(spec, pageable)
                 .map(this::convertToDTO);
     }
-
 
 
 }

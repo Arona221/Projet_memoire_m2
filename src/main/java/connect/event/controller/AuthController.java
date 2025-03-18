@@ -1,16 +1,12 @@
 package connect.event.controller;
 
-import connect.event.dto.ConnexionDTO;
-import connect.event.dto.InscriptionDTO;
-import connect.event.dto.TokenDTO;
-import connect.event.dto.ValidationCompteDTO;
+import connect.event.dto.*;
 import connect.event.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import connect.event.dto.ConnexionResponseDTO;
 
 
 @RestController
@@ -43,5 +39,16 @@ public class AuthController {
     public ResponseEntity<TokenDTO> validerCompte(@Valid @RequestBody ValidationCompteDTO dto) {
         // L'appel à la méthode de validation du compte du service AuthService
         return ResponseEntity.ok(authService.validerCompte(dto));
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordDTO dto) {
+        authService.initiatePasswordReset(dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
+        authService.resetPassword(dto);
+        return ResponseEntity.ok().build();
     }
 }

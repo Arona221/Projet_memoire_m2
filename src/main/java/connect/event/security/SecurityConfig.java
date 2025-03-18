@@ -56,6 +56,7 @@ public class SecurityConfig {
                         // Routes organisateur
                         .requestMatchers("/api/ConnectEvent/billets/organizer/*/events").hasRole("ORGANISATEUR")
                         .requestMatchers("/api/ConnectEvent/billets/event/*/participants").hasRole("ORGANISATEUR")
+                        .requestMatchers("/api/ConnectEvent/notification/**").authenticated()
                         // Par défaut, exiger l'authentification pour les autres requêtes
                         .anyRequest().authenticated()
                 )

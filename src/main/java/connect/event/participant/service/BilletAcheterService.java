@@ -716,6 +716,10 @@ public class BilletAcheterService {
 
         return ResponseEntity.ok(new ArrayList<>(participantsMap.values()));
     }
+    // Ajouter cette méthode
+    public List<Utilisateur> getParticipantsByEvent(Long eventId) {
+        return billetAcheterRepository.getParticipantsByEvent(eventId);
+    }
 
 
 }

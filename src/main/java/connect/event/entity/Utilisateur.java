@@ -29,6 +29,8 @@ public class Utilisateur {
     @JsonIgnore
     @Column(nullable = false)
     private String motDePasse;
+    private String resetPasswordCode;
+    private LocalDateTime resetPasswordCodeExpiration;
 
     @Enumerated(EnumType.STRING)
     private TypeUtilisateur typeUtilisateur;
@@ -43,4 +45,5 @@ public class Utilisateur {
 
     @Version
     private Long version;
+
 }

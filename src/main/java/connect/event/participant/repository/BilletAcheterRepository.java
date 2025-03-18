@@ -29,5 +29,14 @@ public interface BilletAcheterRepository extends JpaRepository<BilletAcheter, Lo
     @Query("SELECT ba FROM BilletAcheter ba WHERE ba.evenement.id_evenement = :evenementId")
     List<BilletAcheter> findByEvenement_Id_evenement(@Param("evenementId") Long evenementId);
 
+    /// Remplacer la méthode existante par :
+    @Query("SELECT DISTINCT ba.participant FROM BilletAcheter ba WHERE ba.evenement.id_evenement = :eventId")
+    List<Utilisateur> getParticipantsByEvent(@Param("eventId") Long eventId);
+
+    // Dans FavorisRepository
+    @Query("SELECT f.utilisateur FROM Favoris f WHERE f.evenement.id_evenement = :eventId")
+    List<Utilisateur> getUsersByFavoriteEvent(Long eventId);
+
+
 
 }

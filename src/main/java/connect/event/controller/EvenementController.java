@@ -132,10 +132,11 @@ public class EvenementController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(defaultValue = "true") boolean showFutureOnly) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
-        Page<EvenementDTO> approvedEvents = evenementService.getApprovedEventMarting(categorie, lieu, date, pageable);
+        Page<EvenementDTO> approvedEvents = evenementService.getApprovedEventMarting(categorie, lieu, date, pageable, showFutureOnly);
 
         return ResponseEntity.ok(approvedEvents);
     }
